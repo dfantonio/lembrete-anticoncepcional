@@ -6,7 +6,6 @@ import { FirestoreService } from "./firestoreService";
 // Configurar como as notificações são tratadas
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
     shouldShowBanner: true,
