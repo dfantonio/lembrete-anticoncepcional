@@ -1,0 +1,57 @@
+---
+alwaysApply: true
+---
+
+# **1\. Arquitetura Geral do Projeto Pill Reminder**
+
+Este documento descreve a visão geral e a arquitetura tecnológica do aplicativo de lembrete de anticoncepcional, focado em oferecer uma solução gratuita e confiável para iOS e Android, atendendo ao requisito de notificação automática interdispositivo.
+
+## **1.1. Contexto e Motivação**
+
+### **Objetivo Central**
+
+O principal objetivo deste projeto é criar um aplicativo pessoal de lembrete de anticoncepcional para a namorada (GF), garantindo que o parceiro (BF) seja notificado automaticamente caso a medicação não seja confirmada em um prazo específico.
+
+### **Fluxo de Uso Desejado**
+
+1. **20:00:** GF recebe um lembrete no seu telefone (iOS/Android).
+2. **20:00 \- 22:00:** GF toma a pílula e marca o status no aplicativo.
+3. **22:01:** Se o status **NÃO** for marcado, o BF deve receber um alerta **automático e confiável** em seu telefone (Android).
+
+### **Restrição Crítica de Arquitetura**
+
+A principal restrição de design é a **necessidade de evitar a taxa anual de $99 USD do Apple Developer Program**. Isso impede a criação de um binário iOS completo (IPA) necessário para Notificações Push tradicionais via APNs.
+
+Esta restrição forçou a adoção de uma arquitetura híbrida:
+
+- **GF (iOS):** Depende de Notificações **Locais** (dentro do Expo Go) para o lembrete das 20:00.
+- **BF (Android):** Depende do **Firebase Cloud Functions (Servidor)** para disparar o alerta das 22:00 via Push Notification (garantindo a automação sem depender do app estar aberto).
+
+## **1.2. Visão Geral**
+
+O projeto adota uma arquitetura _Serverless_ (sem servidor tradicional) onde a sincronização de dados e a automação das notificações críticas são delegadas ao **Firebase** (Backend as a Service), enquanto a experiência do usuário e as notificações locais são gerenciadas pelo **React Native (Expo)**.
+
+| Componente | Função | Tecnologias Chave |  
+| Mobile App (Frontend) | Interface, Notificações Locais (20:00 \- GF), Leitura de Status em Tempo Real. | React Native, Expo Go (iOS), EAS Build (Android), Expo Notifications. |  
+| Banco de Dados (DB) | Fonte da Verdade para o status diário e histórico de tomada. | Firebase Firestore (Plano Spark). |  
+| Automação (Backend) | Disparo automático da notificação de alerta (22:00 \- BF). | Firebase Cloud Functions (Agendada), Expo Push API. |
+
+## **1.3. Fluxo Crítico de Notificação (22:00)**
+
+O fluxo automatizado de alerta é o coração desta arquitetura, garantindo que o lembrete chegue ao BF (você) sem que ele precise abrir o aplicativo:
+
+1. **Registro do Token (BF):** O aplicativo do BF (Android/EAS Build) obtém o pushToken do Expo e o armazena no Firestore (users_config).
+2. **Agendamento:** Uma função do Firebase Cloud Function é agendada para rodar **diariamente às 22:00** (via Cloud Scheduler).
+3. **Verificação:** Às 22:00, a Cloud Function lê o documento daily_log referente ao dia atual.
+4. **Disparo:**
+   - **SE** daily_log.taken for false (Pílula Não Tomada), a função obtém o pushToken do BF na coleção users_config.
+   - A função envia uma requisição POST para a **Expo Push API**, direcionando o alerta de 22:00 para o telefone do BF.
+   - A Cloud Function atualiza daily_log.alertSent para true para evitar novos disparos no mesmo dia.
+
+## **1.4. Estratégia de Multiplataforma e Custo Zero**
+
+A arquitetura garante a gratuidade ao evitar o Apple Developer Program:
+
+- **Namorada (GF \- iOS):** Utiliza o aplicativo **Expo Go**. Isso permite o desenvolvimento, o uso do Firestore para sincronização de status e, crucialmente, o agendamento de **Notificações Locais** (que não exigem certificados APNs pagos).
+- **Você (BF \- Android):** Requer uma compilação nativa para obter um pushToken válido do Expo. Esta compilação é realizada gratuitamente via **EAS Build** (para gerar o APK).
+- **Servidor:** O **Firebase** é usado com o Plano Spark (Grátis), onde os limites de uso de Firestore e Cloud Functions são suficientes para um projeto de uso pessoal.

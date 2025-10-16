@@ -1,0 +1,72 @@
+---
+alwaysApply: true
+---
+
+# **3\. Fluxo e Telas do Aplicativo Mobile (React Native/Expo)**
+
+Este documento descreve as telas, o fluxo de usuário e a implementação das notificações locais no aplicativo.
+
+## **3.1. Fluxo de Primeira Abertura e Login**
+
+O fluxo é baseado na presença do campo role no Firestore (users_config).
+
+| Passo   | Ação do Usuário                          | Resultado                                                                           |
+| :------ | :--------------------------------------- | :---------------------------------------------------------------------------------- |
+| **1\.** | Abre o App (Primeira Vez).               | O App inicia a **Autenticação Anônima** para obter um userId persistente.           |
+| **2\.** | App não encontra o role no users_config. | Exibe a **Tela de Seleção de Papel**.                                               |
+| **3\.** | Usuário seleciona o papel.               | O App salva o role ("GF_PILL_TAKER" ou "BF_REMINDER") no users_config do Firestore. |
+| **4\.** | App redireciona.                         | Vai para a tela Main GF ou Main BF correspondente.                                  |
+| **5\.** | Próximas Vezes.                          | O App lê o role ao iniciar e vai diretamente para a tela principal correta.         |
+
+## **3.2. Estrutura de Telas (Interface)**
+
+O aplicativo terá três telas principais, acessíveis via navegação simples por switch/case (sem React Router):
+
+### **Tela A: Seleção de Papel (RoleSelectScreen)**
+
+- **Visível em:** Primeira abertura.
+- **Conteúdo:** Dois botões: "Eu sou a Tomadora (GF)" e "Eu sou o Lembrete (BF)".
+- **Ação:** Salva o papel no Firestore e redireciona.
+
+### **Tela B: Principal da Tomadora (Main GF Screen)**
+
+- **Visível em:** Usuários com role: "GF_PILL_TAKER".
+- **Conteúdo:**
+  - **Status do Dia:** Exibição do daily_log.taken em tempo real.
+  - **Botão de Ação:** Botão grande e claro: "Pílula Tomada".
+  - **Botão de Histórico:** Navega para a tela Calendar History.
+- **Lógica Principal:**
+  - No useEffect de montagem/atualização, agenda a **Notificação Local Diária para 20:00**.
+
+### **Tela C: Principal do Lembrete (Main BF Screen)**
+
+- **Visível em:** Usuários com role: "BF_REMINDER".
+- **Conteúdo:**
+  - **Status do Dia:** Exibição do daily_log em tempo real (para acompanhamento).
+  - **Hora Registrada:** Exibe daily_log.takenTime.
+  - **Botão de Histórico:** Navega para a tela Calendar History.
+- **Lógica Principal:**
+  - No useEffect de montagem, **obtém e salva o pushToken** no Firestore (users_config).
+  - Não há lógica de notificação aqui, pois o alerta de 22:00 é tratado pelo servidor (Cloud Function).
+
+### **Tela D: Histórico (Calendar History Screen)**
+
+- **Visível em:** Ambos os papéis.
+- **Conteúdo:** Componente de calendário visual.
+- **Lógica Principal:**
+  - Realiza uma consulta no Firestore para os documentos daily_log dos últimos 30-60 dias.
+  - Mapeia os resultados no calendário: **Verde** para dias onde taken: true, **Vermelho** para dias onde taken: false ou o documento não existe. (Visão Rápida).
+
+## **3.3. Implementação de Notificações**
+
+### **Notificação Padrão de Alto Alerta (20:00 \- Namorada)**
+
+- **Tipo:** Local (não requer servidor).
+- **Agenda:** Agendada diariamente no código da GF, com a propriedade repeats: true e hour: 20, minute: 0\.
+- **Cancelamento:** A notificação é **cancelada imediatamente** via Notifications.cancelAllScheduledNotificationsAsync() assim que a GF pressiona o botão "Pílula Tomada".
+
+### **Notificação Automática (22:00 \- Você)**
+
+- **Tipo:** Push Notification (Requer servidor).
+- **Disparo:** Enviada pela **Cloud Function** (conforme detalhado no Documento 2).
+- **Garantia:** Como é um Push Notification real (requer token), ele aparecerá na tela do BF automaticamente, **mesmo que o app esteja fechado**, o que atende ao seu requisito de confiabilidade.

@@ -1,0 +1,58 @@
+---
+alwaysApply: true
+---
+
+# **2\. Cloud Firebase e Estrutura de Dados**
+
+O Firebase é o pilar central que fornece autenticação, sincronização de dados em tempo real e a automação do alerta de 22:00.
+
+## **2.1. Recursos do Firebase Necessários**
+
+| Serviço                      | Propósito                                                                                                     | Plano Necessário                                                   |
+| :--------------------------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------- |
+| **Firestore**                | Banco de dados NoSQL para dados em tempo real e histórico (status diário, hora de tomada, tokens de usuário). | Spark (Grátis)                                                     |
+| **Authentication**           | Gerar um userId persistente para cada dispositivo (via autenticação anônima).                                 | Spark (Grátis)                                                     |
+| **Cloud Functions**          | Executar a lógica de automação do alerta de 22:00.                                                            | Blaze (necessário para Funções Agendadas, mas o uso será Gratuito) |
+| **Cloud Scheduler / PubSub** | Agendar a Cloud Function para rodar exatamente às 22:00 (Implícito na Funções Agendadas).                     | Incluído no Blaze/Free Tier                                        |
+
+## **2.2. Payloads de Dados (Firestore Collections)**
+
+Todos os dados serão armazenados em coleções públicas, mas acessíveis apenas por usuários autenticados, seguindo o padrão de caminhos: /artifacts/{appId}/public/data/{collectionName}.
+
+### **2.2.1. Coleção: daily_log (Histórico Diário)**
+
+_Caminho: /artifacts/{appId}/public/data/daily_log/{YYYY-MM-DD}_
+
+Este documento é a "fonte da verdade" diária e o registro histórico para o calendário.
+
+| Campo     | Tipo    | Requisito   | Descrição                                                                                |
+| :-------- | :------ | :---------- | :--------------------------------------------------------------------------------------- |
+| dateKey   | String  | Obrigatório | Data no formato YYYY-MM-DD. Chave do documento.                                          |
+| taken     | Boolean | Obrigatório | true se a pílula foi tomada; false caso contrário.                                       |
+| takenTime | String  | Condicional | Hora formatada (HH:MM) em que o botão de tomada foi pressionado. Vazio se taken: false.  |
+| alertSent | Boolean | Obrigatório | Flag usada pela Cloud Function. Se true, o alerta de 22:00 já foi disparado (ou pulado). |
+
+### **2.2.2. Coleção: users_config (Configuração do Usuário/Dispositivo)**
+
+_Caminho: /artifacts/{appId}/public/data/users_config/{userId}_
+
+Este documento define o papel do usuário e armazena o token necessário para enviar notificações para o BF.
+
+| Campo     | Tipo   | Requisito   | Descrição                                                                              |
+| :-------- | :----- | :---------- | :------------------------------------------------------------------------------------- |
+| role      | String | Obrigatório | O papel definido pelo usuário: "GF_PILL_TAKER" ou "BF_REMINDER".                       |
+| pushToken | String | Condicional | ExponentPushToken\[...\]. **Obrigatório apenas para o BF.** Usado pela Cloud Function. |
+| platform  | String | Opcional    | Plataforma do dispositivo (android ou ios).                                            |
+
+## **2.3. Lógica da Cloud Function (Alerta 22:00)**
+
+A função é agendada para rodar diariamente às 22:00 (no fuso horário configurado no Firebase).
+
+1. **Timestamp:** Obtém a chave do dia (YYYY-MM-DD) para buscar o documento daily_log.
+2. **Busca do Status:** Lê o daily_log do dia.
+3. **Condição de Disparo:**
+   - SE (daily_log.taken \== false) E (daily_log.alertSent \== false):  
+     a. Busca do Token: Consulta a coleção users_config para encontrar o documento com role: "BF_REMINDER" e extrai o pushToken.  
+     b. Disparo Expo: Envia o POST para a API do Expo Push com o token e a mensagem de alerta.  
+     c. Atualização: Atualiza o daily_log.alertSent para true.
+4. **Fim:** Se a condição não for satisfeita, a função termina (a pílula foi tomada a tempo).
