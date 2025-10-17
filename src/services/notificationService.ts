@@ -44,7 +44,7 @@ export class NotificationService {
   /**
    * Agenda notificação local diária para 20:00 (GF)
    */
-  static async scheduleDailyReminder(): Promise<void> {
+  static async scheduleDaily20hNotification(): Promise<void> {
     try {
       // Cancelar notificações anteriores
       await Notifications.cancelAllScheduledNotificationsAsync();
@@ -57,9 +57,9 @@ export class NotificationService {
           sound: true,
         },
         trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
           hour: 20,
           minute: 0,
-          repeats: true,
         },
       });
 
@@ -80,6 +80,24 @@ export class NotificationService {
     } catch (error) {
       console.error("❌ Erro ao cancelar notificações:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Registra para push notifications e salva token (para BF)
+   */
+  static async registerForPushNotifications(): Promise<string | null> {
+    try {
+      // Solicitar permissões primeiro
+      const hasPermission = await this.requestPermissions();
+      if (!hasPermission) {
+        return null;
+      }
+
+      return await this.getPushToken();
+    } catch (error) {
+      console.error("❌ Erro ao registrar para push notifications:", error);
+      return null;
     }
   }
 
@@ -139,7 +157,7 @@ export class NotificationService {
           body: "Esta é uma notificação de teste!",
           sound: true,
         },
-        trigger: { seconds: 2 },
+        trigger: { seconds: 2 } as any,
       });
       console.log("✅ Notificação de teste enviada");
     } catch (error) {

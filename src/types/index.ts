@@ -26,7 +26,12 @@ export interface FirebaseConfig {
 }
 
 // Tipos para navegação
-export type ScreenName = "RoleSelect" | "MainGF" | "MainBF" | "CalendarHistory";
+export enum ScreenName {
+  RoleSelect = "role-select",
+  MainGF = "main-gf",
+  MainBF = "main-bf",
+  CalendarHistory = "calendar-history",
+}
 
 export interface AppState {
   currentScreen: ScreenName;
