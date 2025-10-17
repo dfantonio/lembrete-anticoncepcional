@@ -1,50 +1,130 @@
-# Welcome to your Expo app 👋
+# 💊 Lembrete Anticoncepcional
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo de lembrete de pílula anticoncepcional com notificações automáticas entre dispositivos.
 
-## Get started
+## 🏗️ Arquitetura
 
-1. Install dependencies
+Este projeto utiliza uma arquitetura **serverless** baseada em Firebase:
 
-   ```bash
-   npm install
-   ```
+- **Frontend:** React Native (Expo) - iOS (Expo Go) e Android (EAS Build)
+- **Backend:** Firebase (Firestore + Cloud Functions)
+- **Notificações:** Expo Push API + Notificações Locais
 
-2. Start the app
+## 🔥 Firebase Functions Implementadas
 
-   ```bash
-   npx expo start
-   ```
+### 1. `dailyPillReminder` (Função Agendada)
 
-In the output, you'll find options to open the app in a
+- **Execução:** Diariamente às 22:00 (horário de Brasília)
+- **Função:** Verifica se a pílula foi tomada e envia notificação para o BF se necessário
+- **Trigger:** Cloud Scheduler automático
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 2. `testPillReminder` (Função de Teste)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- **Execução:** Manual via HTTP
+- **Função:** Executa a mesma lógica da função agendada para testes
+- **URL:** https://us-central1-app-anticoncepcional.cloudfunctions.net/testPillReminder
 
-## Get a fresh project
+## 📱 Como Funciona
 
-When you're ready, run:
+### Fluxo Principal:
 
-```bash
-npm run reset-project
+1. **GF (iOS)** recebe notificação local às 20:00
+2. **GF** marca pílula como tomada no app
+3. **22:00** - Cloud Function verifica automaticamente:
+   - Se `taken = false` e `alertSent = false`
+   - Envia notificação push para **BF (Android)**
+   - Marca `alertSent = true`
+
+### Estrutura de Dados (Firestore):
+
+```
+artifacts/lembrete-anticoncepcional/public/data/
+├── daily_log/{YYYY-MM-DD}
+│   ├── taken: boolean
+│   ├── takenTime: string
+│   └── alertSent: boolean
+└── users_config/{userId}
+    ├── role: "GF_PILL_TAKER" | "BF_REMINDER"
+    ├── pushToken: string
+    └── platform: "ios" | "android"
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🚀 Como Executar
 
-## Learn more
+### 1. Instalar dependências
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 2. Iniciar o app
 
-## Join the community
+```bash
+npx expo start
+```
 
-Join our community of developers creating universal apps.
+### 3. Testar Firebase
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Abra o app
+- Clique em "🧪 Abrir Teste Firebase"
+- Teste autenticação, Firestore e notificações
+
+### 4. Testar Cloud Functions
+
+- Acesse: https://us-central1-app-anticoncepcional.cloudfunctions.net/testPillReminder
+- Verifique se a notificação chega no dispositivo BF
+
+## 🔧 Desenvolvimento
+
+### Estrutura do Projeto:
+
+```
+src/
+├── config/firebase.ts          # Configuração Firebase
+├── services/
+│   ├── authService.ts          # Autenticação anônima
+│   ├── firestoreService.ts     # Operações Firestore
+│   └── notificationService.ts  # Notificações locais/push
+├── screens/
+│   └── TestFirebaseScreen.tsx  # Tela de testes
+└── types/index.ts              # Tipos TypeScript
+
+functions/
+└── src/index.ts                # Cloud Functions
+```
+
+### Comandos Úteis:
+
+```bash
+# Desenvolvimento
+npx expo start
+
+# Build para Android
+npx eas build --platform android
+
+# Deploy Cloud Functions
+firebase deploy --only functions
+
+# Ver logs das Functions
+firebase functions:log
+```
+
+## 📋 Status da Implementação
+
+- ✅ **Firebase configurado** (Auth + Firestore)
+- ✅ **Cloud Functions deployadas** (agendada + teste)
+- ✅ **Notificações locais** (iOS - Expo Go)
+- ✅ **Push notifications** (Android - EAS Build)
+- ✅ **Tela de teste** integrada
+- 🔄 **Telas principais** (RoleSelect, MainGF, MainBF) - Próximo passo
+
+## 🎯 Próximos Passos
+
+1. Implementar telas principais do app
+2. Integrar fluxo completo de usuário
+3. Testes finais em produção
+4. Deploy para stores (opcional)
+
+---
+
+**Desenvolvido com ❤️ usando Expo + Firebase**

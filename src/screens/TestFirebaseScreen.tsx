@@ -43,6 +43,7 @@ export default function TestFirebaseScreen() {
     setIsLoading(true);
     try {
       // Testar salvamento de configuração
+      //TODO: Registra de forma dinâmica com base no Sistema Operacional
       await FirestoreService.saveUserConfig(userId, {
         role: "GF_PILL_TAKER",
         platform: "ios",
