@@ -20,7 +20,7 @@ O fluxo é baseado na presença do campo role no Firestore (users_config).
 
 ## **3.2. Estrutura de Telas (Interface)**
 
-O aplicativo terá três telas principais, acessíveis via navegação simples por switch/case (sem React Router):
+O aplicativo terá três telas principais, acessíveis via navegação
 
 ### **Tela A: Seleção de Papel (RoleSelectScreen)**
 

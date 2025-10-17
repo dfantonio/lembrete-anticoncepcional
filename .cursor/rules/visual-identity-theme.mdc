@@ -1,0 +1,70 @@
+---
+alwaysApply: true
+---
+
+# **4\. Identidade Visual e Layout (Foco Feminino)**
+
+Este documento define a paleta de cores, tipografia e elementos de interface (UI) para criar um aplicativo com uma estética "feminina", focada em calma, conforto e confiabilidade, conforme solicitado.
+
+## **4.1. Moodboard e Conceito**
+
+O design deve evocar um sentimento de **Bem-Estar, Calma e Suavidade**. A abordagem é **Clean (limpa)** e **Gentle (gentil)**, utilizando cores pastel quentes e elementos arredondados para tornar a interação diária um momento de cuidado, e não de estresse.
+
+| Característica | Estilo Visual                                                      |
+| :------------- | :----------------------------------------------------------------- |
+| **Bases**      | Minimalista, moderno, com muito espaço em branco.                  |
+| **Elementos**  | Cantos arredondados (soft radius), sombras suaves (low elevation). |
+| **Sensação**   | Confortável, acolhedor e seguro.                                   |
+
+## **4.2. Paleta de Cores Principal**
+
+A paleta é construída em torno de tons quentes e suaves, com cores de ação bem definidas para o status.
+
+| Nome da Cor               | Código HEX                   | Uso Principal                                                            | Papel/Função                                                                |
+| :------------------------ | :--------------------------- | :----------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| **Branco Suave (Base)**   | \#F5F5F5                     | Fundo de todas as telas.                                                 | Base primária, oferece descanso visual.                                     |
+| **Rosa Pêssego (Ação)**   | \#FFB6C1 (Light Pink)        | Botões de Confirmação (GF: "Pílula Tomada"), Ícones de Navegação Ativos. | Cor principal para ações positivas e foco.                                  |
+| **Cinza Carvão (Texto)**  | \#333333                     | Títulos, textos longos e rótulos.                                        | Alto contraste para leitura, mais suave que preto puro.                     |
+| **Verde Menta (Sucesso)** | \#8FEF9F (Soft Mint)         | Indicador de taken: true (Status e Calendário).                          | Feedback visual de sucesso e conclusão.                                     |
+| **Malva Escuro (Alerta)** | \#C67171 (Dusty Rose/Maroon) | Indicador de taken: false e notificação de Alerta (BF).                  | Feedback visual de falha ou pendência, mais suave que um vermelho vibrante. |
+
+## **4.3. Tipografia e Hierarquia**
+
+A tipografia deve ser de fácil leitura e transmitir uma sensação amigável.
+
+- **Fonte Recomendada:** Uma fonte _sans-serif_ moderna e suave (como 'Inter' ou 'Poppins').
+- **Peso (Weight):** Preferência por pesos _Medium (500)_ e _Semi-Bold (600)_.
+
+| Nível            | Uso                                     | Estilo                                                                               |
+| :--------------- | :-------------------------------------- | :----------------------------------------------------------------------------------- |
+| **H1 (Título)**  | Títulos de Tela (ex: "Lembrete Diário") | Tamanho grande (28-32pt), Peso Bold.                                                 |
+| **Status**       | Status do Dia (ex: "Tomada\!")          | Tamanho extra grande (40pt+), Cor de Ação ou Sucesso.                                |
+| **Corpo**        | Rótulos, Descrições e Itens de Lista.   | Tamanho padrão (14-16pt), Peso Regular/Medium, cor \#333333.                         |
+| **Ação (Botão)** | Texto dentro dos botões.                | Tamanho (16-18pt), Peso Semi-Bold, **Cor Branca** para contraste com o Rosa Pêssego. |
+
+## **4.4. Estilo de Elementos da Interface**
+
+### **Botões de Ação (GF)**
+
+- **Cor:** Fundo **Rosa Pêssego** (\#FFB6C1).
+- **Forma:** Arredondamento alto (Pill-shaped, se possível, ou borderRadius grande).
+- **Shadow:** Sombra suave (pouca opacidade) para dar profundidade e destaque.
+- **Feedback:** Animação leve ao toque (diminuição sutil de escala ou opacidade) para feedback tátil.
+
+### **Cards e Contêineres**
+
+- **Fundo:** Branco Puro (\#FFFFFF) para se destacar do fundo \#F5F5F5.
+- **Borda:** Cantos suavemente arredondados (8-12pt).
+- **Sombra:** Sombra muito sutil e desfocada (soft elevation) para dar um efeito de "flutuação" sem ser pesado.
+
+### **Ícones**
+
+- **Estilo:** Ícones de linha fina (outline icons) para manter a sensação de leveza e minimalismo.
+- **Cor:** Cinza Carvão ou Rosa Pêssego (para ícones interativos).
+
+### **Tela de Histórico (Calendar History Screen)**
+
+- O componente de calendário deve usar as cores de status definidas:
+  - **Dia Tomado:** Ponto ou círculo de fundo **Verde Menta** (\#8FEF9F).
+  - **Dia Perdido/Pendente:** Ponto ou círculo de fundo **Malva Escuro** (\#C67171).
+  - **Dia Atual:** Borda destacada em Rosa Pêssego.
