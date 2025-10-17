@@ -51,13 +51,24 @@ artifacts/lembrete-anticoncepcional/public/data/
 
 ## 🚀 Como Executar
 
-### 1. Instalar dependências
+### 1. Configurar Firebase
+
+**⚠️ IMPORTANTE:** Este projeto requer configuração do Firebase. Os arquivos de configuração sensíveis não estão incluídos no repositório por questões de segurança.
+
+Você precisará criar:
+
+1. **Projeto Firebase** em https://console.firebase.google.com
+2. **Arquivo `google-services.json`** (Android) - baixe do console Firebase
+3. **Arquivo `app-anticoncepcional-firebase-adminsdk-fbsvc-*.json`** (Service Account) - para Cloud Functions
+4. **Arquivo `.firebaserc`** com seu project ID
+
+### 2. Instalar dependências
 
 ```bash
 npm install
 ```
 
-### 2. Iniciar o app
+### 3. Iniciar o app
 
 ```bash
 npx expo start

@@ -41,9 +41,34 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Firebase Configuration Files (SENSITIVE - DO NOT COMMIT)
+google-services.json
 app-anticoncepcional-firebase-adminsdk-fbsvc-6b2022e57a.json
+.firebaserc
 
 # Firebase Functions
 functions/node_modules/
 functions/lib/
 functions/.env
+
+# EAS Build Configuration (may contain sensitive info)
+eas.json
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Keystore files
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Debug files
+firebase-debug.log
+firebase-debug.*.log
