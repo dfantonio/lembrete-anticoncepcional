@@ -25,7 +25,7 @@ A paleta é construída em torno de tons quentes e suaves, com cores de ação b
 | **Branco Suave (Base)**   | \#F5F5F5                     | Fundo de todas as telas.                                                 | Base primária, oferece descanso visual.                                     |
 | **Rosa Pêssego (Ação)**   | \#FFB6C1 (Light Pink)        | Botões de Confirmação (GF: "Pílula Tomada"), Ícones de Navegação Ativos. | Cor principal para ações positivas e foco.                                  |
 | **Cinza Carvão (Texto)**  | \#333333                     | Títulos, textos longos e rótulos.                                        | Alto contraste para leitura, mais suave que preto puro.                     |
-| **Verde Menta (Sucesso)** | \#8FEF9F (Soft Mint)         | Indicador de taken: true (Status e Calendário).                          | Feedback visual de sucesso e conclusão.                                     |
+| **Verde Menta (Sucesso)** | \#4CAF50 (Material Green)    | Indicador de taken: true (Status e Calendário).                          | Feedback visual de sucesso e conclusão.                                     |
 | **Malva Escuro (Alerta)** | \#C67171 (Dusty Rose/Maroon) | Indicador de taken: false e notificação de Alerta (BF).                  | Feedback visual de falha ou pendência, mais suave que um vermelho vibrante. |
 
 ## **4.3. Tipografia e Hierarquia**
@@ -65,6 +65,6 @@ A tipografia deve ser de fácil leitura e transmitir uma sensação amigável.
 ### **Tela de Histórico (Calendar History Screen)**
 
 - O componente de calendário deve usar as cores de status definidas:
-  - **Dia Tomado:** Ponto ou círculo de fundo **Verde Menta** (\#8FEF9F).
+  - **Dia Tomado:** Ponto ou círculo de fundo **Verde Menta** (\#4CAF50).
   - **Dia Perdido/Pendente:** Ponto ou círculo de fundo **Malva Escuro** (\#C67171).
   - **Dia Atual:** Borda destacada em Rosa Pêssego.
