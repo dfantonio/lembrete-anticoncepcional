@@ -43,14 +43,30 @@ export class NotificationService {
 
   /**
    * Agenda notificações semanais individuais para 20:00 (GF)
+   * Verifica se a pílula já foi tomada hoje antes de agendar
    */
   static async scheduleWeeklyNotifications(): Promise<void> {
     try {
       // Cancelar notificações antigas
       await Notifications.cancelAllScheduledNotificationsAsync();
 
+      // Verificar se a pílula já foi tomada hoje
+      const today = new Date().toISOString().split("T")[0];
+      const todayLog = await FirestoreService.getDailyLog(today);
+      const pillTakenToday = todayLog?.taken || false;
+
+      let initialIndex = 0;
+
+      // Se for hoje e a pílula já foi tomada, pular
+      if (pillTakenToday) {
+        console.log(
+          `⏭️ Pílula já tomada hoje (${today}), notificação não agendada`
+        );
+        initialIndex = 1;
+      }
+
       // Agendar para os próximos 7 dias
-      for (let i = 0; i < 7; i++) {
+      for (let i = initialIndex; i < 7; i++) {
         const date = new Date();
         date.setDate(date.getDate() + i);
         date.setHours(20, 0, 0, 0);

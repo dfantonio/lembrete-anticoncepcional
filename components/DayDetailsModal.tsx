@@ -12,6 +12,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/Button";
 import { ObservationsSelector } from "@/components/ObservationsSelector";
 import { AppColors, Typography } from "@/constants/theme";
+import {
+  OBSERVATION_EMOJIS,
+  OBSERVATION_LABELS,
+} from "@/src/constants/observations";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog, ObservationType } from "@/src/types";
 
@@ -22,26 +26,6 @@ interface DayDetailsModalProps {
   dateKey: string;
   onDataChanged: () => void;
 }
-
-const OBSERVATION_LABELS: Record<ObservationType, string> = {
-  colica: "Cólica",
-  sangramento: "Sangramento",
-  corrimento: "Corrimento",
-  dor_seio: "Dor no Seio",
-  dor_costas: "Dor nas Costas",
-  dor_pernas: "Dor nas Pernas",
-  espinha: "Espinha",
-};
-
-const OBSERVATION_EMOJIS: Record<ObservationType, string> = {
-  colica: "🤕",
-  sangramento: "🩸",
-  corrimento: "💧",
-  dor_seio: "🫀",
-  dor_costas: "🦴",
-  dor_pernas: "🦵",
-  espinha: "🔴",
-};
 
 export function DayDetailsModal({
   visible,

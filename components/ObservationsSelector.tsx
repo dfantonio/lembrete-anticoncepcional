@@ -1,4 +1,8 @@
 import { AppColors, Typography } from "@/constants/theme";
+import {
+  OBSERVATION_EMOJIS,
+  OBSERVATION_LABELS,
+} from "@/src/constants/observations";
 import { ObservationType } from "@/src/types";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -8,26 +12,6 @@ interface ObservationsSelectorProps {
   onToggleObservation: (observation: ObservationType) => void;
   disabled?: boolean;
 }
-
-const OBSERVATION_LABELS: Record<ObservationType, string> = {
-  colica: "Cólica",
-  sangramento: "Sangramento",
-  corrimento: "Corrimento",
-  dor_seio: "Dor no Seio",
-  dor_costas: "Dor nas Costas",
-  dor_pernas: "Dor nas Pernas",
-  espinha: "Espinha",
-};
-
-const OBSERVATION_EMOJIS: Record<ObservationType, string> = {
-  colica: "🤕",
-  sangramento: "🩸",
-  corrimento: "💧",
-  dor_seio: "🫀",
-  dor_costas: "🦴",
-  dor_pernas: "🦵",
-  espinha: "🔴",
-};
 
 export function ObservationsSelector({
   selectedObservations,
@@ -86,7 +70,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    ...Typography.h3,
     color: AppColors.text,
     marginBottom: 12,
     textAlign: "center",

@@ -36,7 +36,6 @@ export default function MainGFScreen() {
       // Solicitar permissões de notificação
       await NotificationService.requestPermissions();
 
-      //TODO: Verificar se a notificação já foi agendada para hoje
       // Agendar notificações semanais para 20:00
       await NotificationService.scheduleWeeklyNotifications();
 

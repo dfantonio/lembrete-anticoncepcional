@@ -11,7 +11,7 @@ export const AppColors = {
   base: "#F5F5F5", // Branco Suave (Base)
   action: "#FFB6C1", // Rosa Pêssego (Ação)
   text: "#333333", // Cinza Carvão (Texto)
-  success: "#8FEF9F", // Verde Menta (Sucesso)
+  success: "#4CAF50", // Verde Menta (Sucesso) - Melhor contraste
   alert: "#C67171", // Malva Escuro (Alerta)
   white: "#FFFFFF", // Branco Puro (Cards)
 };
