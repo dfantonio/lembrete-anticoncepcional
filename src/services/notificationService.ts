@@ -69,9 +69,15 @@ export class NotificationService {
       for (let i = initialIndex; i < 7; i++) {
         const date = new Date();
         date.setDate(date.getDate() + i);
-        date.setHours(20, 0, 0, 0);
+        date.setHours(21, 0, 0, 0);
 
         const dateKey = date.toISOString().split("T")[0];
+
+        // Verificar se a data não é no passado
+        if (date.getTime() <= Date.now()) {
+          console.log(`⏭️ Pulando data no passado: ${dateKey}`);
+          continue;
+        }
 
         await Notifications.scheduleNotificationAsync({
           identifier: `pill-reminder-${dateKey}`,
