@@ -42,30 +42,54 @@ export class NotificationService {
   }
 
   /**
-   * Agenda notificação local diária para 20:00 (GF)
+   * Agenda notificações semanais individuais para 20:00 (GF)
    */
-  static async scheduleDaily20hNotification(): Promise<void> {
+  static async scheduleWeeklyNotifications(): Promise<void> {
     try {
-      // Cancelar notificações anteriores
+      // Cancelar notificações antigas
       await Notifications.cancelAllScheduledNotificationsAsync();
 
-      // Agendar nova notificação para 20:00
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "💊 Lembrete da Pílula",
-          body: "Hora de tomar sua pílula anticoncepcional!",
-          sound: true,
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.DAILY,
-          hour: 20,
-          minute: 0,
-        },
-      });
+      // Agendar para os próximos 7 dias
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        date.setHours(20, 0, 0, 0);
 
-      console.log("✅ Notificação diária agendada para 20:00");
+        const dateKey = date.toISOString().split("T")[0];
+
+        await Notifications.scheduleNotificationAsync({
+          identifier: `pill-reminder-${dateKey}`,
+          content: {
+            title: "💊 Lembrete da Pílula",
+            body: "Hora de tomar sua pílula anticoncepcional!",
+            sound: true,
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            date: date,
+          },
+        });
+      }
+
+      console.log("✅ Notificações semanais agendadas (7 dias)");
     } catch (error) {
-      console.error("❌ Erro ao agendar notificação:", error);
+      console.error("❌ Erro ao agendar notificações semanais:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancela apenas a notificação de hoje
+   */
+  static async cancelTodayNotification(): Promise<void> {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const notificationId = `pill-reminder-${today}`;
+
+      await Notifications.cancelScheduledNotificationAsync(notificationId);
+      console.log(`✅ Notificação de hoje (${today}) cancelada`);
+    } catch (error) {
+      console.error("❌ Erro ao cancelar notificação de hoje:", error);
       throw error;
     }
   }

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { PrimaryButton } from "@/components/PrimaryButton";
+import { Button } from "@/components/Button";
 import { AppColors, Typography } from "@/constants/theme";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
@@ -67,14 +67,14 @@ export default function RoleSelectScreen() {
 
         {/* Botões de seleção */}
         <View style={styles.buttonsContainer}>
-          <PrimaryButton
+          <Button
             title="Eu sou a Sasa 💊"
             onPress={() => handleRoleSelection("GF_PILL_TAKER")}
             disabled={isLoading}
             style={styles.roleButton}
           />
 
-          <PrimaryButton
+          <Button
             title="Eu sou o Tonho 📱"
             onPress={() => handleRoleSelection("BF_REMINDER")}
             disabled={isLoading}

@@ -4,17 +4,21 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/AppHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import { Button } from "@/components/Button";
+import { ObservationsSelector } from "@/components/ObservationsSelector";
 import { StatusCard } from "@/components/StatusCard";
 import { AppColors, Typography } from "@/constants/theme";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
-import { DailyLog, ScreenName } from "@/src/types";
+import { DailyLog, ObservationType, ScreenName } from "@/src/types";
 
 export default function MainGFScreen() {
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedObservations, setSelectedObservations] = useState<
+    ObservationType[]
+  >([]);
 
   useEffect(() => {
     initializeScreen();
@@ -32,8 +36,9 @@ export default function MainGFScreen() {
       // Solicitar permissões de notificação
       await NotificationService.requestPermissions();
 
-      // Agendar notificação diária para 20:00
-      await NotificationService.scheduleDaily20hNotification();
+      //TODO: Verificar se a notificação já foi agendada para hoje
+      // Agendar notificações semanais para 20:00
+      await NotificationService.scheduleWeeklyNotifications();
 
       // Observar mudanças no log diário
       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
@@ -65,17 +70,21 @@ export default function MainGFScreen() {
         taken: true,
         takenTime: timeString,
         alertSent: false,
+        observations: selectedObservations,
       };
 
       // Salvar no Firestore
       await FirestoreService.saveDailyLog(dateKey, newLog);
 
-      // Cancelar notificação local (já foi tomada)
-      await NotificationService.cancelAllNotifications();
+      // Cancelar notificação de hoje (já foi tomada)
+      await NotificationService.cancelTodayNotification();
 
       Alert.alert("Pílula Registrada! ✅", `Tomada às ${timeString}`, [
         { text: "OK" },
       ]);
+
+      // Limpar observações selecionadas após salvar
+      setSelectedObservations([]);
     } catch (error) {
       console.error("❌ Erro ao registrar pílula:", error);
       Alert.alert(
@@ -92,14 +101,12 @@ export default function MainGFScreen() {
     router.push(`/${ScreenName.CalendarHistory}`);
   };
 
-  const getStatusText = () => {
-    if (!dailyLog) return "Aguardando...";
-    return dailyLog.taken ? "Pílula Tomada" : "Pílula Pendente";
-  };
-
-  const getStatusColor = () => {
-    if (!dailyLog) return AppColors.text;
-    return dailyLog.taken ? AppColors.success : AppColors.alert;
+  const handleToggleObservation = (observation: ObservationType) => {
+    setSelectedObservations((prev) =>
+      prev.includes(observation)
+        ? prev.filter((obs) => obs !== observation)
+        : [...prev, observation]
+    );
   };
 
   return (
@@ -116,10 +123,20 @@ export default function MainGFScreen() {
           />
         </View>
 
+        {/* Seleção de observações */}
+        {!dailyLog?.taken && (
+          <View style={styles.observationsSection}>
+            <ObservationsSelector
+              selectedObservations={selectedObservations}
+              onToggleObservation={handleToggleObservation}
+            />
+          </View>
+        )}
+
         {/* Botão de ação */}
         <View style={styles.actionSection}>
           {!dailyLog?.taken ? (
-            <PrimaryButton
+            <Button
               title="Registrar Pílula Tomada"
               onPress={handlePillTaken}
               disabled={isLoading}
@@ -139,7 +156,7 @@ export default function MainGFScreen() {
 
         {/* Botão de histórico */}
         <View style={styles.historySection}>
-          <PrimaryButton
+          <Button
             title="Ver Histórico"
             onPress={navigateToHistory}
             style={styles.historyButton}
@@ -179,6 +196,9 @@ const styles = StyleSheet.create({
     color: AppColors.text,
     marginBottom: 16,
     textAlign: "center",
+  },
+  observationsSection: {
+    marginBottom: 24,
   },
   actionSection: {
     marginBottom: 32,

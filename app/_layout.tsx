@@ -1,11 +1,20 @@
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import { AppColors } from "@/constants/theme";
 import { ScreenName } from "@/src/types";
+import { useEffect } from "react";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  useEffect(() => {
+    console.log("Inicializando aplicação...");
+    SplashScreen.hide();
+  }, []);
+
   return (
     <>
       <Stack

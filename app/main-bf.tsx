@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/AppHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import { Button } from "@/components/Button";
 import { StatusCard } from "@/components/StatusCard";
 import { AppColors, Typography } from "@/constants/theme";
 import { AuthService } from "@/src/services/authService";
@@ -104,7 +104,7 @@ export default function MainBFScreen() {
 
         {/* Botão de histórico */}
         <View style={styles.historySection}>
-          <PrimaryButton
+          <Button
             title="Ver Histórico"
             onPress={navigateToHistory}
             style={styles.historyButton}

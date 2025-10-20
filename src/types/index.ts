@@ -2,6 +2,15 @@
 
 export type UserRole = "GF_PILL_TAKER" | "BF_REMINDER";
 
+export type ObservationType =
+  | "colica"
+  | "sangramento"
+  | "corrimento"
+  | "dor_seio"
+  | "dor_costas"
+  | "dor_pernas"
+  | "espinha";
+
 export interface UserConfig {
   role: UserRole;
   pushToken?: string;
@@ -13,6 +22,7 @@ export interface DailyLog {
   taken: boolean;
   takenTime?: string; // HH:MM
   alertSent: boolean;
+  observations?: ObservationType[];
 }
 
 export interface FirebaseConfig {

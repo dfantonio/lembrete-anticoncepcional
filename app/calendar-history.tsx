@@ -11,6 +11,7 @@ import { Calendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/AppHeader";
+import { DayDetailsModal } from "@/components/DayDetailsModal";
 import { AppColors, Typography } from "@/constants/theme";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog } from "@/src/types";
@@ -18,6 +19,11 @@ import { DailyLog } from "@/src/types";
 export default function CalendarHistoryScreen() {
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDailyLog, setSelectedDailyLog] = useState<DailyLog | null>(
+    null
+  );
 
   useEffect(() => {
     loadHistoryData();
@@ -33,6 +39,30 @@ export default function CalendarHistoryScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDayPress = async (day: any) => {
+    const dateKey = day.dateString;
+    setSelectedDate(dateKey);
+
+    try {
+      const log = await FirestoreService.getDailyLog(dateKey);
+      setSelectedDailyLog(log);
+      setModalVisible(true);
+    } catch (error) {
+      console.error("❌ Erro ao carregar dados do dia:", error);
+    }
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+    setSelectedDate("");
+    setSelectedDailyLog(null);
+  };
+
+  const handleDataChanged = () => {
+    loadHistoryData();
+    handleModalClose();
   };
 
   const getMarkedDates = () => {
@@ -177,6 +207,7 @@ export default function CalendarHistoryScreen() {
             showWeekNumbers={false}
             disableMonthChange
             hideArrows={false}
+            onDayPress={handleDayPress}
             renderHeader={(date) => {
               const month = date.toString("MMMM yyyy");
               return (
@@ -223,6 +254,15 @@ export default function CalendarHistoryScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Modal de detalhes */}
+      <DayDetailsModal
+        visible={modalVisible}
+        onClose={handleModalClose}
+        dailyLog={selectedDailyLog}
+        dateKey={selectedDate}
+        onDataChanged={handleDataChanged}
+      />
     </SafeAreaView>
   );
 }

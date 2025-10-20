@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -106,11 +107,13 @@ export class FirestoreService {
 
       if (logSnap.exists()) {
         const data = logSnap.data();
+
         return {
           dateKey: data.dateKey,
           taken: data.taken,
           takenTime: data.takenTime,
           alertSent: data.alertSent,
+          observations: data.observations,
         };
       }
       return null;
@@ -210,6 +213,20 @@ export class FirestoreService {
       console.log("✅ Push token atualizado:", userId);
     } catch (error) {
       console.error("❌ Erro ao atualizar push token:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Exclui um log diário
+   */
+  static async deleteDailyLog(dateKey: string): Promise<void> {
+    try {
+      const logRef = doc(db, COLLECTIONS.DAILY_LOG, dateKey);
+      await deleteDoc(logRef);
+      console.log("✅ Log diário excluído:", dateKey);
+    } catch (error) {
+      console.error("❌ Erro ao excluir log diário:", error);
       throw error;
     }
   }
