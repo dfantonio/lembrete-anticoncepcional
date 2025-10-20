@@ -1,8 +1,8 @@
-import { AppColors, Typography } from "@/constants/theme";
 import {
   OBSERVATION_EMOJIS,
   OBSERVATION_LABELS,
-} from "@/src/constants/observations";
+} from "@/constants/observations";
+import { AppColors, Typography } from "@/constants/theme";
 import { ObservationType } from "@/src/types";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";

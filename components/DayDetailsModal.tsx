@@ -11,11 +11,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/Button";
 import { ObservationsSelector } from "@/components/ObservationsSelector";
-import { AppColors, Typography } from "@/constants/theme";
 import {
   OBSERVATION_EMOJIS,
   OBSERVATION_LABELS,
-} from "@/src/constants/observations";
+} from "@/constants/observations";
+import { AppColors, Typography } from "@/constants/theme";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog, ObservationType } from "@/src/types";
 
