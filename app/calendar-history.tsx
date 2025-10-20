@@ -1,6 +1,12 @@
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Calendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -118,6 +124,18 @@ export default function CalendarHistoryScreen() {
     textMonthFontSize: 18,
     textDayHeaderFontSize: 14,
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <AppHeader title="Histórico" showBack onBack={() => router.back()} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={AppColors.action} />
+          <Text style={styles.loadingText}>Carregando histórico...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -312,5 +330,17 @@ const styles = StyleSheet.create({
   legendText: {
     ...Typography.body,
     color: AppColors.text,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    ...Typography.body,
+    color: AppColors.text,
+    marginTop: 16,
+    textAlign: "center",
   },
 });
