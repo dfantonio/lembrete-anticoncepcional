@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: AppColors.white,
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     marginVertical: 8,
     shadowColor: AppColors.text,
     shadowOffset: {

@@ -114,55 +114,59 @@ export default function MainGFScreen() {
       <AppHeader title="Lembrete Diário" />
 
       <View style={styles.content}>
-        {/* Status do dia */}
-        <View style={styles.statusSection}>
-          <Text style={styles.statusTitle}>Status de Hoje</Text>
-          <StatusCard
-            taken={dailyLog?.taken || false}
-            takenTime={dailyLog?.takenTime}
-          />
-        </View>
-
-        {/* Seleção de observações */}
-        {!dailyLog?.taken && (
-          <View style={styles.observationsSection}>
-            <ObservationsSelector
-              selectedObservations={selectedObservations}
-              onToggleObservation={handleToggleObservation}
+        <View style={styles.upperSection}>
+          {/* Status do dia */}
+          <View style={styles.statusSection}>
+            <Text style={styles.statusTitle}>Status de Hoje</Text>
+            <StatusCard
+              taken={dailyLog?.taken || false}
+              takenTime={dailyLog?.takenTime}
             />
           </View>
-        )}
 
-        {/* Botão de ação */}
-        <View style={styles.actionSection}>
+          {/* Seleção de observações */}
           {!dailyLog?.taken && (
-            <Button
-              title="Registrar Pílula Tomada"
-              onPress={handlePillTaken}
-              disabled={isLoading}
-              size="large"
-            />
+            <View style={styles.observationsSection}>
+              <ObservationsSelector
+                selectedObservations={selectedObservations}
+                onToggleObservation={handleToggleObservation}
+              />
+            </View>
           )}
         </View>
 
-        {/* Botão de histórico */}
-        <View style={styles.historySection}>
-          <Button
-            title="Ver Histórico"
-            onPress={navigateToHistory}
-            style={styles.historyButton}
-          />
-        </View>
+        <View style={styles.lowerSection}>
+          {/* Botão de ação */}
+          <View style={styles.actionSection}>
+            {!dailyLog?.taken && (
+              <Button
+                title="Registrar Pílula Tomada"
+                onPress={handlePillTaken}
+                disabled={isLoading}
+                size="large"
+              />
+            )}
+          </View>
 
-        {/* Informações */}
-        <View style={styles.infoSection}>
-          <Text style={styles.infoText}>
-            💡 Você receberá um lembrete às 20:00 todos os dias.
-          </Text>
-          <Text style={styles.infoText}>
-            📱 O seu amor 💖 será notificado às 22:00 se você não registrar a
-            pílula.
-          </Text>
+          {/* Botão de histórico */}
+          <View style={styles.historySection}>
+            <Button
+              title="Ver Histórico"
+              onPress={navigateToHistory}
+              style={styles.historyButton}
+            />
+          </View>
+
+          {/* Informações */}
+          <View style={styles.infoSection}>
+            <Text style={styles.infoText}>
+              💡 Você receberá um lembrete às 21:00 todos os dias.
+            </Text>
+            <Text style={styles.infoText}>
+              📱 O seu amor 💖 será notificado às 22:00 se você não registrar a
+              pílula.
+            </Text>
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -178,11 +182,17 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   content: {
+    flex: 1,
     paddingHorizontal: 20,
     paddingVertical: 20,
+    justifyContent: "space-between",
   },
+
+  upperSection: {},
+  lowerSection: {},
+
   statusSection: {
-    marginBottom: 32,
+    marginBottom: 16,
   },
   statusTitle: {
     ...Typography.h2,
