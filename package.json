@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start --port 3001",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android --port 3001",
     "ios": "expo start --ios --port 3001",
     "web": "expo start --web",
