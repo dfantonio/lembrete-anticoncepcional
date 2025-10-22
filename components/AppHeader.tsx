@@ -39,10 +39,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 16,
     backgroundColor: AppColors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: AppColors.base,
   },
   backButton: {
     padding: 8,
