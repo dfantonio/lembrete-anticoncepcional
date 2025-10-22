@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
@@ -109,7 +108,7 @@ export default function MainGFScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <AppHeader title="Lembrete Diário" />
 
       <View style={styles.content}>
@@ -173,7 +172,7 @@ export default function MainGFScreen() {
           </Text>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

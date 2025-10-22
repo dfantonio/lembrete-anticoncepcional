@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/Button";
 import { AppColors, Typography } from "@/constants/theme";
@@ -48,7 +47,7 @@ export default function RoleSelectScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.logoContainer}>
@@ -88,7 +87,7 @@ export default function RoleSelectScreen() {
           às 22h se a pílula não for registrada.
         </Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

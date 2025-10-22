@@ -8,7 +8,6 @@ import {
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/AppHeader";
 import { DayDetailsModal } from "@/components/DayDetailsModal";
@@ -157,18 +156,18 @@ export default function CalendarHistoryScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <AppHeader title="Histórico" showBack onBack={() => router.back()} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={AppColors.action} />
           <Text style={styles.loadingText}>Carregando histórico...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <AppHeader title="Histórico" showBack onBack={() => router.back()} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -262,7 +261,7 @@ export default function CalendarHistoryScreen() {
         dateKey={selectedDate}
         onDataChanged={handleDataChanged}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
