@@ -28,6 +28,8 @@ export function ObservationsSelector({
     "dor_costas",
     "dor_pernas",
     "espinha",
+    "sexo_protegido",
+    "sexo_sem_protecao",
   ];
 
   return (

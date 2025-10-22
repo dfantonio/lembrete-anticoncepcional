@@ -8,6 +8,8 @@ export const OBSERVATION_LABELS: Record<ObservationType, string> = {
   dor_costas: "Dor nas Costas",
   dor_pernas: "Dor nas Pernas",
   espinha: "Espinha",
+  sexo_protegido: "Protegido",
+  sexo_sem_protecao: "Sem Proteção",
 };
 
 export const OBSERVATION_EMOJIS: Record<ObservationType, string> = {
@@ -18,4 +20,6 @@ export const OBSERVATION_EMOJIS: Record<ObservationType, string> = {
   dor_costas: "🦴",
   dor_pernas: "🦵",
   espinha: "🔴",
+  sexo_protegido: "😔🛡️",
+  sexo_sem_protecao: "💕💦",
 };

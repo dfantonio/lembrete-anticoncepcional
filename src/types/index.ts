@@ -3,8 +3,8 @@
 export type UserRole = "GF_PILL_TAKER" | "BF_REMINDER";
 
 // Tipos para temas
-export type Theme = 'light' | 'dark';
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type Theme = "light" | "dark";
+export type ThemeMode = "light" | "dark" | "system";
 
 export type ObservationType =
   | "colica"
@@ -13,7 +13,9 @@ export type ObservationType =
   | "dor_seio"
   | "dor_costas"
   | "dor_pernas"
-  | "espinha";
+  | "espinha"
+  | "sexo_protegido"
+  | "sexo_sem_protecao";
 
 export interface UserConfig {
   role: UserRole;
