@@ -51,11 +51,6 @@ export const Typography = {
     fontWeight: "600" as const,
     lineHeight: 36,
   },
-  status: {
-    fontSize: 40,
-    fontWeight: "600" as const,
-    lineHeight: 48,
-  },
   body: {
     fontSize: 16,
     fontWeight: "400" as const,

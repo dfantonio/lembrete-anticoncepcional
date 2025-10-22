@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusText: {
-    ...Typography.status,
+    ...Typography.h1,
     marginBottom: 4,
   },
   timeText: {

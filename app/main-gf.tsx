@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
@@ -108,7 +108,10 @@ export default function MainGFScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       <AppHeader title="Lembrete Diário" />
 
       <View style={styles.content}>
@@ -133,22 +136,13 @@ export default function MainGFScreen() {
 
         {/* Botão de ação */}
         <View style={styles.actionSection}>
-          {!dailyLog?.taken ? (
+          {!dailyLog?.taken && (
             <Button
               title="Registrar Pílula Tomada"
               onPress={handlePillTaken}
               disabled={isLoading}
-              style={styles.actionButton}
+              size="large"
             />
-          ) : (
-            <View style={styles.completedContainer}>
-              <Text style={styles.completedText}>
-                ✅ Pílula já registrada hoje!
-              </Text>
-              <Text style={styles.completedTime}>
-                Tomada às {dailyLog.takenTime}
-              </Text>
-            </View>
           )}
         </View>
 
@@ -172,7 +166,7 @@ export default function MainGFScreen() {
           </Text>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -181,8 +175,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.base,
   },
+  contentContainer: {
+    flexGrow: 1,
+  },
   content: {
-    flex: 1,
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
@@ -201,9 +197,6 @@ const styles = StyleSheet.create({
   actionSection: {
     marginBottom: 32,
   },
-  actionButton: {
-    minHeight: 60,
-  },
   completedContainer: {
     backgroundColor: AppColors.white,
     padding: 24,
@@ -219,7 +212,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   completedText: {
-    ...Typography.status,
+    ...Typography.h1,
     color: AppColors.success,
     marginBottom: 8,
   },
@@ -232,7 +225,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   historyButton: {
-    minHeight: 50,
     backgroundColor: AppColors.text,
   },
   infoSection: {
