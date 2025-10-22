@@ -20,6 +20,6 @@ export const OBSERVATION_EMOJIS: Record<ObservationType, string> = {
   dor_costas: "🦴",
   dor_pernas: "🦵",
   espinha: "🔴",
-  sexo_protegido: "😔🛡️",
+  sexo_protegido: "🛡️",
   sexo_sem_protecao: "💕💦",
 };

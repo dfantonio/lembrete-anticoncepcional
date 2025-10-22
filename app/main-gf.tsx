@@ -119,9 +119,6 @@ export default function MainGFScreen() {
         <View style={styles.upperSection}>
           {/* Status do dia */}
           <View style={styles.statusSection}>
-            <Text style={[styles.statusTitle, { color: colors.text }]}>
-              Status de Hoje
-            </Text>
             <StatusCard
               taken={dailyLog?.taken || false}
               takenTime={dailyLog?.takenTime}
@@ -187,7 +184,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 8,
     justifyContent: "space-between",
   },
 

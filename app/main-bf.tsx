@@ -77,9 +77,6 @@ export default function MainBFScreen() {
       <View style={styles.content}>
         {/* Status do dia */}
         <View style={styles.statusSection}>
-          <Text style={[styles.statusTitle, { color: colors.text }]}>
-            Status de Hoje
-          </Text>
           <StatusCard
             taken={dailyLog?.taken || false}
             takenTime={dailyLog?.takenTime}
