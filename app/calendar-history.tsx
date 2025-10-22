@@ -203,7 +203,6 @@ export default function CalendarHistoryScreen() {
             markedDates={getMarkedDates()}
             markingType="custom"
             hideExtraDays
-            firstDay={1} // Segunda-feira
             showWeekNumbers={false}
             disableMonthChange
             hideArrows={false}
