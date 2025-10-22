@@ -1,28 +1,46 @@
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface AppHeaderProps {
   title: string;
   showBack?: boolean;
   onBack?: () => void;
+  showThemeToggle?: boolean;
 }
 
-export function AppHeader({ title, showBack = false, onBack }: AppHeaderProps) {
+export function AppHeader({
+  title,
+  showBack = false,
+  onBack,
+  showThemeToggle = false,
+}: AppHeaderProps) {
+  const { colors } = useAppTheme();
+
   return (
-    <View style={styles.header}>
-      {showBack && (
+    <View style={[styles.header, { backgroundColor: colors.surface }]}>
+      {showBack ? (
         <TouchableOpacity
           style={styles.backButton}
           onPress={onBack}
           activeOpacity={0.7}
         >
-          <MaterialIcons name="chevron-left" size={24} color={AppColors.text} />
+          <MaterialIcons name="chevron-left" size={24} color={colors.text} />
         </TouchableOpacity>
+      ) : (
+        <View style={styles.placeholder} />
       )}
-      <Text style={styles.title}>{title}</Text>
-      {showBack && <View style={styles.placeholder} />}
+
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+
+      {showThemeToggle ? (
+        <ThemeToggle size="small" />
+      ) : (
+        <View style={styles.placeholder} />
+      )}
     </View>
   );
 }
@@ -34,7 +52,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: AppColors.white,
   },
   backButton: {
     padding: 8,
@@ -42,7 +59,6 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.h2,
-    color: AppColors.text,
     textAlign: "center",
     flex: 1,
   },

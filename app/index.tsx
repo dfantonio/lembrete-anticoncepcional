@@ -2,12 +2,13 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
-import { AppColors } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { ScreenName } from "@/src/types";
 
 export default function Index() {
+  const { colors } = useAppTheme();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -52,10 +53,10 @@ export default function Index() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: AppColors.base,
+          backgroundColor: colors.base,
         }}
       >
-        <ActivityIndicator size="large" color={AppColors.action} />
+        <ActivityIndicator size="large" color={colors.action} />
       </View>
     );
   }

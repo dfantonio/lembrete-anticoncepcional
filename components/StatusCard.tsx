@@ -1,4 +1,5 @@
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
@@ -10,8 +11,10 @@ interface StatusCardProps {
 }
 
 export function StatusCard({ taken, takenTime, style }: StatusCardProps) {
+  const { colors } = useAppTheme();
+
   const getStatusColor = () => {
-    return taken ? AppColors.success : AppColors.alert;
+    return taken ? colors.success : colors.alert;
   };
 
   const getStatusText = () => {
@@ -23,7 +26,13 @@ export function StatusCard({ taken, takenTime, style }: StatusCardProps) {
   };
 
   return (
-    <View style={[styles.card, style]}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, shadowColor: colors.text },
+        style,
+      ]}
+    >
       <View style={styles.statusContainer}>
         <MaterialIcons
           name={getStatusIcon()}
@@ -35,7 +44,9 @@ export function StatusCard({ taken, takenTime, style }: StatusCardProps) {
             {getStatusText()}
           </Text>
           {taken && takenTime && (
-            <Text style={styles.timeText}>Tomada às {takenTime}</Text>
+            <Text style={[styles.timeText, { color: colors.textSecondary }]}>
+              Tomada às {takenTime}
+            </Text>
           )}
         </View>
       </View>
@@ -45,11 +56,9 @@ export function StatusCard({ taken, takenTime, style }: StatusCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: AppColors.white,
     borderRadius: 12,
     padding: 16,
     marginVertical: 8,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -72,7 +81,6 @@ const styles = StyleSheet.create({
   },
   timeText: {
     ...Typography.body,
-    color: AppColors.text,
     opacity: 0.7,
   },
 });

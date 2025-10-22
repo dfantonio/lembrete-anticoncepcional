@@ -15,7 +15,8 @@ import {
   OBSERVATION_EMOJIS,
   OBSERVATION_LABELS,
 } from "@/constants/observations";
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog, ObservationType } from "@/src/types";
 
@@ -34,6 +35,7 @@ export function DayDetailsModal({
   dateKey,
   onDataChanged,
 }: DayDetailsModalProps) {
+  const { colors } = useAppTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [selectedObservations, setSelectedObservations] = useState<
     ObservationType[]
@@ -125,7 +127,9 @@ export function DayDetailsModal({
   const renderObservations = () => {
     if (!dailyLog?.observations || dailyLog.observations.length === 0) {
       return (
-        <Text style={styles.noObservationsText}>
+        <Text
+          style={[styles.noObservationsText, { color: colors.textSecondary }]}
+        >
           Nenhuma observação registrada
         </Text>
       );
@@ -134,7 +138,13 @@ export function DayDetailsModal({
     return (
       <View style={styles.observationsContainer}>
         {dailyLog.observations.map((observation) => (
-          <View key={observation} style={styles.observationChip}>
+          <View
+            key={observation}
+            style={[
+              styles.observationChip,
+              { backgroundColor: colors.action, shadowColor: colors.text },
+            ]}
+          >
             <Text style={styles.observationEmoji}>
               {OBSERVATION_EMOJIS[observation]}
             </Text>
@@ -154,40 +164,59 @@ export function DayDetailsModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.base }]}
+      >
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>✕</Text>
+            <Text style={[styles.closeButtonText, { color: colors.text }]}>
+              ✕
+            </Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Detalhes do Dia</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
+            Detalhes do Dia
+          </Text>
           <View style={styles.placeholder} />
         </View>
 
         <View style={styles.content}>
           {/* Data */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Data</Text>
-            <Text style={styles.dateText}>{formatDate(dateKey)}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Data
+            </Text>
+            <Text style={[styles.dateText, { color: colors.text }]}>
+              {formatDate(dateKey)}
+            </Text>
           </View>
 
           {/* Status */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Status</Text>
-            <View style={styles.statusContainer}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Status
+            </Text>
+            <View
+              style={[
+                styles.statusContainer,
+                { backgroundColor: colors.surface, shadowColor: colors.text },
+              ]}
+            >
               <Text
                 style={[
                   styles.statusText,
                   {
-                    color: dailyLog?.taken
-                      ? AppColors.success
-                      : AppColors.alert,
+                    color: dailyLog?.taken ? colors.success : colors.alert,
                   },
                 ]}
               >
                 {dailyLog?.taken ? "✅ Pílula Tomada" : "❌ Pílula Não Tomada"}
               </Text>
               {dailyLog?.takenTime && (
-                <Text style={styles.timeText}>às {dailyLog.takenTime}</Text>
+                <Text
+                  style={[styles.timeText, { color: colors.textSecondary }]}
+                >
+                  às {dailyLog.takenTime}
+                </Text>
               )}
             </View>
           </View>
@@ -195,7 +224,9 @@ export function DayDetailsModal({
           {/* Observações */}
           <View style={styles.section}>
             <View style={styles.observationsHeader}>
-              <Text style={styles.sectionTitle}>Observações</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Observações
+              </Text>
               {!isEditing && dailyLog?.taken && (
                 <Button
                   variant="outlined"
@@ -208,7 +239,12 @@ export function DayDetailsModal({
             </View>
 
             {isEditing ? (
-              <View style={styles.editingContainer}>
+              <View
+                style={[
+                  styles.editingContainer,
+                  { backgroundColor: colors.surface, shadowColor: colors.text },
+                ]}
+              >
                 <ObservationsSelector
                   selectedObservations={selectedObservations}
                   onToggleObservation={(obs) => {
@@ -244,7 +280,10 @@ export function DayDetailsModal({
             <View style={styles.actionsSection}>
               <TouchableOpacity
                 onPress={handleDeleteRecord}
-                style={styles.deleteButton}
+                style={[
+                  styles.deleteButton,
+                  { backgroundColor: colors.alert, shadowColor: colors.alert },
+                ]}
                 disabled={isLoading}
               >
                 <Text style={styles.deleteButtonText}>🗑️ Excluir Registro</Text>
@@ -260,7 +299,6 @@ export function DayDetailsModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.base,
   },
   header: {
     flexDirection: "row",
@@ -269,27 +307,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: AppColors.text,
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    // backgroundColor: AppColors.text,
-    // opacity: 0.1,
     alignItems: "center",
     justifyContent: "center",
   },
   closeButtonText: {
-    color: AppColors.text,
-    // color: "black",
     fontSize: 16,
     fontWeight: "bold",
   },
   headerTitle: {
     ...Typography.h2,
-    color: AppColors.text,
-    // color: "red",
   },
   placeholder: {
     width: 32,
@@ -303,19 +334,15 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    color: AppColors.text,
     marginBottom: 12,
   },
   dateText: {
     ...Typography.body,
-    color: AppColors.text,
     textTransform: "capitalize",
   },
   statusContainer: {
-    backgroundColor: AppColors.white,
     padding: 16,
     borderRadius: 12,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -329,7 +356,6 @@ const styles = StyleSheet.create({
   },
   timeText: {
     ...Typography.body,
-    color: AppColors.text,
     marginTop: 4,
     opacity: 0.7,
   },
@@ -341,19 +367,15 @@ const styles = StyleSheet.create({
   editButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: AppColors.action,
     borderRadius: 16,
   },
   editButtonText: {
     ...Typography.caption,
-    color: AppColors.white,
     fontWeight: "600",
   },
   editingContainer: {
-    backgroundColor: AppColors.white,
     padding: 16,
     borderRadius: 12,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -369,17 +391,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   cancelButton: {
-    // flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: AppColors.text,
     opacity: 0.1,
     alignItems: "center",
   },
   cancelButtonText: {
     ...Typography.button,
-    color: AppColors.text,
     fontWeight: "600",
   },
   saveButton: {
@@ -396,8 +415,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: AppColors.action,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -412,12 +429,11 @@ const styles = StyleSheet.create({
   },
   observationText: {
     ...Typography.caption,
-    color: AppColors.white,
+    color: "#FFFFFF",
     fontWeight: "600",
   },
   noObservationsText: {
     ...Typography.body,
-    color: AppColors.text,
     opacity: 0.5,
     fontStyle: "italic",
   },
@@ -426,12 +442,10 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   deleteButton: {
-    backgroundColor: AppColors.alert,
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: "center",
-    shadowColor: AppColors.alert,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -442,7 +456,7 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     ...Typography.body,
-    color: AppColors.white,
+    color: "#FFFFFF",
     fontWeight: "600",
   },
 });

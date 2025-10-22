@@ -3,38 +3,64 @@
  * Foco feminino: calma, conforto e confiabilidade
  */
 
+import { Theme } from "@/src/types";
 import { Platform } from "react-native";
 
-// Paleta de cores da identidade visual
-export const AppColors = {
+// Paleta de cores Light Theme (original)
+export const LightColors = {
   // Cores principais
   base: "#F5F5F5", // Branco Suave (Base)
+  surface: "#FFFFFF", // Branco Puro (Cards)
   action: "#FFB6C1", // Rosa Pêssego (Ação)
   text: "#333333", // Cinza Carvão (Texto)
-  success: "#4CAF50", // Verde Menta (Sucesso) - Melhor contraste
+  textSecondary: "#666666", // Cinza Médio (Texto Secundário)
+  success: "#4CAF50", // Verde Menta (Sucesso)
   alert: "#C67171", // Malva Escuro (Alerta)
-  white: "#FFFFFF", // Branco Puro (Cards)
+  border: "#E0E0E0", // Cinza Claro (Bordas)
+  white: "#FFFFFF", // Branco Puro
 };
 
+// Paleta de cores Dark Theme
+export const DarkColors = {
+  // Cores principais
+  base: "#1A1A1A", // Preto Suave (Base)
+  surface: "#2D2D2D", // Cinza Escuro (Cards)
+  action: "#FF8FA3", // Rosa Escuro
+  text: "#F5F5F5", // Texto Principal Claro
+  textSecondary: "#B0B0B0", // Texto Secundário
+  success: "#66BB6A", // Verde Menta Mais Vibrante
+  alert: "#E57373", // Malva Mais Vibrante
+  border: "#404040", // Bordas Sutis
+  white: "#FFFFFF", // Branco Puro (para ícones)
+};
+
+// Função para obter cores baseada no tema
+export function getColors(theme: Theme) {
+  return theme === "light" ? LightColors : DarkColors;
+}
+
+// Compatibilidade - mantém AppColors para referências existentes
+export const AppColors = LightColors;
+
 // Cores do sistema (mantidas para compatibilidade)
-const tintColorLight = AppColors.action;
+const tintColorLight = LightColors.action;
 const tintColorDark = "#fff";
 
 export const Colors = {
   light: {
-    text: AppColors.text,
-    background: AppColors.base,
+    text: LightColors.text,
+    background: LightColors.base,
     tint: tintColorLight,
-    icon: AppColors.text,
-    tabIconDefault: AppColors.text,
+    icon: LightColors.text,
+    tabIconDefault: LightColors.text,
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: AppColors.text,
-    background: AppColors.base,
+    text: DarkColors.text,
+    background: DarkColors.base,
     tint: tintColorDark,
-    icon: AppColors.text,
-    tabIconDefault: AppColors.text,
+    icon: DarkColors.text,
+    tabIconDefault: DarkColors.text,
     tabIconSelected: tintColorDark,
   },
 };

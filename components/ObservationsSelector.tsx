@@ -2,7 +2,8 @@ import {
   OBSERVATION_EMOJIS,
   OBSERVATION_LABELS,
 } from "@/constants/observations";
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { ObservationType } from "@/src/types";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -18,6 +19,7 @@ export function ObservationsSelector({
   onToggleObservation,
   disabled = false,
 }: ObservationsSelectorProps) {
+  const { colors } = useAppTheme();
   const allObservations: ObservationType[] = [
     "colica",
     "sangramento",
@@ -30,7 +32,9 @@ export function ObservationsSelector({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Observações (opcional)</Text>
+      <Text style={[styles.title, { color: colors.text }]}>
+        Observações (opcional)
+      </Text>
       <View style={styles.chipsContainer}>
         {allObservations.map((observation) => {
           const isSelected = selectedObservations.includes(observation);
@@ -39,6 +43,11 @@ export function ObservationsSelector({
               key={observation}
               style={[
                 styles.chip,
+                {
+                  backgroundColor: isSelected ? colors.action : colors.surface,
+                  borderColor: colors.border,
+                  shadowColor: colors.text,
+                },
                 isSelected && styles.chipSelected,
                 disabled && styles.chipDisabled,
               ]}
@@ -51,6 +60,9 @@ export function ObservationsSelector({
               <Text
                 style={[
                   styles.chipText,
+                  {
+                    color: isSelected ? colors.white : colors.text,
+                  },
                   isSelected && styles.chipTextSelected,
                   disabled && styles.chipTextDisabled,
                 ]}
@@ -70,7 +82,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    color: AppColors.text,
     marginBottom: 12,
     textAlign: "center",
   },
@@ -86,11 +97,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: AppColors.white,
     borderWidth: 1,
-    borderColor: AppColors.text,
-    opacity: 0.3,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -100,8 +107,6 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   chipSelected: {
-    backgroundColor: AppColors.action,
-    borderColor: AppColors.action,
     opacity: 1,
   },
   chipDisabled: {
@@ -113,11 +118,9 @@ const styles = StyleSheet.create({
   },
   chipText: {
     ...Typography.caption,
-    color: AppColors.text,
     fontWeight: "500",
   },
   chipTextSelected: {
-    color: AppColors.white,
     fontWeight: "600",
   },
   chipTextDisabled: {

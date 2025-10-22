@@ -5,13 +5,15 @@ import { StyleSheet, Text, View } from "react-native";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
 import { StatusCard } from "@/components/StatusCard";
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
 import { DailyLog } from "@/src/types";
 
 export default function MainBFScreen() {
+  const { colors } = useAppTheme();
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
 
   useEffect(() => {
@@ -64,18 +66,20 @@ export default function MainBFScreen() {
   };
 
   const getStatusColor = () => {
-    if (!dailyLog) return AppColors.text;
-    return dailyLog.taken ? AppColors.success : AppColors.alert;
+    if (!dailyLog) return colors.text;
+    return dailyLog.taken ? colors.success : colors.alert;
   };
 
   return (
-    <View style={styles.container}>
-      <AppHeader title="Acompanhamento" />
+    <View style={[styles.container, { backgroundColor: colors.base }]}>
+      <AppHeader title="Acompanhamento" showThemeToggle />
 
       <View style={styles.content}>
         {/* Status do dia */}
         <View style={styles.statusSection}>
-          <Text style={styles.statusTitle}>Status de Hoje</Text>
+          <Text style={[styles.statusTitle, { color: colors.text }]}>
+            Status de Hoje
+          </Text>
           <StatusCard
             taken={dailyLog?.taken || false}
             takenTime={dailyLog?.takenTime}
@@ -90,13 +94,20 @@ export default function MainBFScreen() {
         </View>
 
         {/* Informações sobre notificações */}
-        <View style={styles.notificationInfo}>
-          <Text style={styles.infoTitle}>📱 Notificações Automáticas</Text>
-          <Text style={styles.infoText}>
+        <View
+          style={[
+            styles.notificationInfo,
+            { backgroundColor: colors.surface, shadowColor: colors.text },
+          ]}
+        >
+          <Text style={[styles.infoTitle, { color: colors.text }]}>
+            📱 Notificações Automáticas
+          </Text>
+          <Text style={[styles.infoText, { color: colors.text }]}>
             Você receberá uma notificação às 22:00 se a pílula não for
             registrada até lá.
           </Text>
-          <Text style={styles.infoText}>
+          <Text style={[styles.infoText, { color: colors.text }]}>
             Esta notificação funcionará mesmo com o app fechado.
           </Text>
         </View>
@@ -112,11 +123,11 @@ export default function MainBFScreen() {
 
         {/* Informações adicionais */}
         <View style={styles.additionalInfo}>
-          <Text style={styles.additionalInfoText}>
+          <Text style={[styles.additionalInfoText, { color: colors.text }]}>
             💡 Este app funciona em tempo real - você verá as atualizações
             instantaneamente.
           </Text>
-          <Text style={styles.additionalInfoText}>
+          <Text style={[styles.additionalInfoText, { color: colors.text }]}>
             🔔 Certifique-se de que as notificações estão habilitadas para este
             app.
           </Text>
@@ -129,7 +140,6 @@ export default function MainBFScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.base,
   },
   content: {
     flex: 1,
@@ -141,7 +151,6 @@ const styles = StyleSheet.create({
   },
   statusTitle: {
     ...Typography.h2,
-    color: AppColors.text,
     marginBottom: 16,
     textAlign: "center",
   },
@@ -155,11 +164,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   notificationInfo: {
-    backgroundColor: AppColors.white,
     padding: 20,
     borderRadius: 12,
     marginBottom: 32,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -170,12 +177,10 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     ...Typography.h2,
-    color: AppColors.text,
     marginBottom: 12,
   },
   infoText: {
     ...Typography.body,
-    color: AppColors.text,
     marginBottom: 8,
     opacity: 0.8,
   },
@@ -184,14 +189,13 @@ const styles = StyleSheet.create({
   },
   historyButton: {
     minHeight: 50,
-    backgroundColor: AppColors.text,
+    backgroundColor: "#333333", // Keep as fallback
   },
   additionalInfo: {
     marginTop: "auto",
   },
   additionalInfoText: {
     ...Typography.caption,
-    color: AppColors.text,
     textAlign: "center",
     marginBottom: 8,
     opacity: 0.6,

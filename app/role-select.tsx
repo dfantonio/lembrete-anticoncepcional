@@ -3,12 +3,14 @@ import React, { useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { ScreenName, UserRole } from "@/src/types";
 
 export default function RoleSelectScreen() {
+  const { colors } = useAppTheme();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRoleSelection = async (role: UserRole) => {
@@ -47,7 +49,7 @@ export default function RoleSelectScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.base }]}>
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.logoContainer}>
@@ -59,8 +61,8 @@ export default function RoleSelectScreen() {
         </View>
 
         {/* Título */}
-        <Text style={styles.title}>Bem-vinda!</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: colors.text }]}>Bem-vinda!</Text>
+        <Text style={[styles.subtitle, { color: colors.text }]}>
           Para começar, escolha seu papel no aplicativo:
         </Text>
 
@@ -82,7 +84,7 @@ export default function RoleSelectScreen() {
         </View>
 
         {/* Texto explicativo */}
-        <Text style={styles.explanation}>
+        <Text style={[styles.explanation, { color: colors.text }]}>
           A Sasa receberá lembretes diários às 20h.{"\n"}O Tonho será notificado
           às 22h se a pílula não for registrada.
         </Text>
@@ -94,7 +96,6 @@ export default function RoleSelectScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.base,
   },
   content: {
     flex: 1,
@@ -113,13 +114,11 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.h1,
-    color: AppColors.text,
     textAlign: "center",
     marginBottom: 16,
   },
   subtitle: {
     ...Typography.body,
-    color: AppColors.text,
     textAlign: "center",
     marginBottom: 48,
     opacity: 0.8,
@@ -133,11 +132,10 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   secondaryButton: {
-    backgroundColor: AppColors.text,
+    backgroundColor: "#333333", // Keep this as a fallback for secondary button
   },
   explanation: {
     ...Typography.caption,
-    color: AppColors.text,
     textAlign: "center",
     opacity: 0.6,
     lineHeight: 20,

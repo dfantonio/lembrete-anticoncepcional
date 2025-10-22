@@ -6,13 +6,15 @@ import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
 import { ObservationsSelector } from "@/components/ObservationsSelector";
 import { StatusCard } from "@/components/StatusCard";
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
 import { DailyLog, ObservationType, ScreenName } from "@/src/types";
 
 export default function MainGFScreen() {
+  const { colors } = useAppTheme();
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedObservations, setSelectedObservations] = useState<
@@ -108,16 +110,18 @@ export default function MainGFScreen() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.base }]}
       contentContainerStyle={styles.contentContainer}
     >
-      <AppHeader title="Lembrete Diário" />
+      <AppHeader title="Lembrete Diário" showThemeToggle />
 
       <View style={styles.content}>
         <View style={styles.upperSection}>
           {/* Status do dia */}
           <View style={styles.statusSection}>
-            <Text style={styles.statusTitle}>Status de Hoje</Text>
+            <Text style={[styles.statusTitle, { color: colors.text }]}>
+              Status de Hoje
+            </Text>
             <StatusCard
               taken={dailyLog?.taken || false}
               takenTime={dailyLog?.takenTime}
@@ -159,10 +163,10 @@ export default function MainGFScreen() {
 
           {/* Informações */}
           <View style={styles.infoSection}>
-            <Text style={styles.infoText}>
+            <Text style={[styles.infoText, { color: colors.text }]}>
               💡 Você receberá um lembrete às 21:00 todos os dias.
             </Text>
-            <Text style={styles.infoText}>
+            <Text style={[styles.infoText, { color: colors.text }]}>
               📱 O seu amor 💖 será notificado às 22:00 se você não registrar a
               pílula.
             </Text>
@@ -176,7 +180,6 @@ export default function MainGFScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.base,
   },
   contentContainer: {
     flexGrow: 1,
@@ -196,7 +199,6 @@ const styles = StyleSheet.create({
   },
   statusTitle: {
     ...Typography.h2,
-    color: AppColors.text,
     marginBottom: 16,
     textAlign: "center",
   },
@@ -207,11 +209,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   completedContainer: {
-    backgroundColor: AppColors.white,
     padding: 24,
     borderRadius: 12,
     alignItems: "center",
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -222,26 +222,23 @@ const styles = StyleSheet.create({
   },
   completedText: {
     ...Typography.h1,
-    color: AppColors.success,
     marginBottom: 8,
   },
   completedTime: {
     ...Typography.body,
-    color: AppColors.text,
     opacity: 0.7,
   },
   historySection: {
     marginBottom: 32,
   },
   historyButton: {
-    backgroundColor: AppColors.text,
+    backgroundColor: "#333333", // Keep as fallback
   },
   infoSection: {
     marginTop: "auto",
   },
   infoText: {
     ...Typography.caption,
-    color: AppColors.text,
     textAlign: "center",
     marginBottom: 8,
     opacity: 0.6,

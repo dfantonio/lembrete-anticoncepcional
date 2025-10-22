@@ -11,11 +11,13 @@ import { Calendar } from "react-native-calendars";
 
 import { AppHeader } from "@/components/AppHeader";
 import { DayDetailsModal } from "@/components/DayDetailsModal";
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog } from "@/src/types";
 
 export default function CalendarHistoryScreen() {
+  const { colors, theme } = useAppTheme();
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -71,14 +73,14 @@ export default function CalendarHistoryScreen() {
       if (log.taken) {
         marked[log.dateKey] = {
           marked: true,
-          dotColor: AppColors.success,
+          dotColor: colors.success,
           customStyles: {
             container: {
-              backgroundColor: AppColors.success,
+              backgroundColor: colors.success,
               borderRadius: 16,
             },
             text: {
-              color: AppColors.white,
+              color: colors.white,
               fontWeight: "bold",
             },
           },
@@ -86,14 +88,14 @@ export default function CalendarHistoryScreen() {
       } else {
         marked[log.dateKey] = {
           marked: true,
-          dotColor: AppColors.alert,
+          dotColor: colors.alert,
           customStyles: {
             container: {
-              backgroundColor: AppColors.alert,
+              backgroundColor: colors.alert,
               borderRadius: 16,
             },
             text: {
-              color: AppColors.white,
+              color: colors.white,
               fontWeight: "bold",
             },
           },
@@ -104,13 +106,13 @@ export default function CalendarHistoryScreen() {
     // Destacar dia atual
     const today = new Date().toISOString().split("T")[0];
     if (marked[today]) {
-      marked[today].customStyles.container.borderColor = AppColors.action;
+      marked[today].customStyles.container.borderColor = colors.action;
       marked[today].customStyles.container.borderWidth = 2;
     } else {
       marked[today] = {
         customStyles: {
           container: {
-            borderColor: AppColors.action,
+            borderColor: colors.action,
             borderWidth: 2,
             borderRadius: 16,
           },
@@ -133,19 +135,19 @@ export default function CalendarHistoryScreen() {
   const stats = getStatistics();
 
   const calendarTheme = {
-    backgroundColor: AppColors.white,
-    calendarBackground: AppColors.white,
-    textSectionTitleColor: AppColors.text,
-    selectedDayBackgroundColor: AppColors.action,
-    selectedDayTextColor: AppColors.white,
-    todayTextColor: AppColors.action,
-    dayTextColor: AppColors.text,
-    textDisabledColor: "#d9e1e8",
-    dotColor: AppColors.action,
-    selectedDotColor: AppColors.white,
-    arrowColor: AppColors.action,
-    monthTextColor: AppColors.text,
-    indicatorColor: AppColors.action,
+    backgroundColor: colors.surface,
+    calendarBackground: colors.surface,
+    textSectionTitleColor: colors.text,
+    selectedDayBackgroundColor: colors.action,
+    selectedDayTextColor: colors.white,
+    todayTextColor: colors.action,
+    dayTextColor: colors.text,
+    textDisabledColor: colors.textSecondary,
+    dotColor: colors.action,
+    selectedDotColor: colors.white,
+    arrowColor: colors.action,
+    monthTextColor: colors.text,
+    indicatorColor: colors.action,
     textDayFontWeight: "400" as const,
     textMonthFontWeight: "600" as const,
     textDayHeaderFontWeight: "600" as const,
@@ -156,47 +158,80 @@ export default function CalendarHistoryScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <AppHeader title="Histórico" showBack onBack={() => router.back()} />
+      <View style={[styles.container, { backgroundColor: colors.base }]}>
+        <AppHeader
+          title="Histórico"
+          showBack
+          onBack={() => router.back()}
+          showThemeToggle
+        />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={AppColors.action} />
-          <Text style={styles.loadingText}>Carregando histórico...</Text>
+          <ActivityIndicator size="large" color={colors.action} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>
+            Carregando histórico...
+          </Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <AppHeader title="Histórico" showBack onBack={() => router.back()} />
+    <View style={[styles.container, { backgroundColor: colors.base }]}>
+      <AppHeader
+        title="Histórico"
+        showBack
+        onBack={() => router.back()}
+        showThemeToggle
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Estatísticas */}
-        <View style={styles.statsContainer}>
-          <Text style={styles.statsTitle}>Últimos 30 dias</Text>
+        <View
+          style={[
+            styles.statsContainer,
+            { backgroundColor: colors.surface, shadowColor: colors.text },
+          ]}
+        >
+          <Text style={[styles.statsTitle, { color: colors.text }]}>
+            Últimos 30 dias
+          </Text>
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{stats.taken}</Text>
-              <Text style={styles.statLabel}>Tomadas</Text>
+              <Text style={[styles.statNumber, { color: colors.success }]}>
+                {stats.taken}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.text }]}>
+                Tomadas
+              </Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={[styles.statNumber, { color: AppColors.alert }]}>
+              <Text style={[styles.statNumber, { color: colors.alert }]}>
                 {stats.missed}
               </Text>
-              <Text style={styles.statLabel}>Perdidas</Text>
+              <Text style={[styles.statLabel, { color: colors.text }]}>
+                Perdidas
+              </Text>
             </View>
             <View style={styles.statCard}>
-              <Text style={[styles.statNumber, { color: AppColors.action }]}>
+              <Text style={[styles.statNumber, { color: colors.action }]}>
                 {stats.percentage}%
               </Text>
-              <Text style={styles.statLabel}>Taxa de Sucesso</Text>
+              <Text style={[styles.statLabel, { color: colors.text }]}>
+                Taxa de Sucesso
+              </Text>
             </View>
           </View>
         </View>
 
         {/* Calendário */}
-        <View style={styles.calendarContainer}>
+        <View
+          style={[
+            styles.calendarContainer,
+            { backgroundColor: colors.surface, shadowColor: colors.text },
+          ]}
+        >
           <Calendar
+            key={`calendar-${theme}`} // Força re-render quando tema muda
             style={styles.calendar}
             theme={calendarTheme}
             markedDates={getMarkedDates()}
@@ -209,7 +244,7 @@ export default function CalendarHistoryScreen() {
             renderHeader={(date) => {
               const month = date.toString("MMMM yyyy");
               return (
-                <Text style={styles.calendarHeader}>
+                <Text style={[styles.calendarHeader, { color: colors.text }]}>
                   {month.charAt(0).toUpperCase() + month.slice(1)}
                 </Text>
               );
@@ -218,23 +253,31 @@ export default function CalendarHistoryScreen() {
         </View>
 
         {/* Legenda */}
-        <View style={styles.legendContainer}>
-          <Text style={styles.legendTitle}>Legenda</Text>
+        <View
+          style={[
+            styles.legendContainer,
+            { backgroundColor: colors.surface, shadowColor: colors.text },
+          ]}
+        >
+          <Text style={[styles.legendTitle, { color: colors.text }]}>
+            Legenda
+          </Text>
           <View style={styles.legendItems}>
             <View style={styles.legendItem}>
               <View
-                style={[
-                  styles.legendDot,
-                  { backgroundColor: AppColors.success },
-                ]}
+                style={[styles.legendDot, { backgroundColor: colors.success }]}
               />
-              <Text style={styles.legendText}>Pílula tomada</Text>
+              <Text style={[styles.legendText, { color: colors.text }]}>
+                Pílula tomada
+              </Text>
             </View>
             <View style={styles.legendItem}>
               <View
-                style={[styles.legendDot, { backgroundColor: AppColors.alert }]}
+                style={[styles.legendDot, { backgroundColor: colors.alert }]}
               />
-              <Text style={styles.legendText}>Pílula perdida</Text>
+              <Text style={[styles.legendText, { color: colors.text }]}>
+                Pílula perdida
+              </Text>
             </View>
             <View style={styles.legendItem}>
               <View
@@ -242,12 +285,14 @@ export default function CalendarHistoryScreen() {
                   styles.legendDot,
                   {
                     backgroundColor: "transparent",
-                    borderColor: AppColors.action,
+                    borderColor: colors.action,
                     borderWidth: 2,
                   },
                 ]}
               />
-              <Text style={styles.legendText}>Dia atual</Text>
+              <Text style={[styles.legendText, { color: colors.text }]}>
+                Dia atual
+              </Text>
             </View>
           </View>
         </View>
@@ -268,18 +313,15 @@ export default function CalendarHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.base,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
   statsContainer: {
-    backgroundColor: AppColors.white,
     padding: 20,
     borderRadius: 12,
     marginVertical: 16,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -290,7 +332,6 @@ const styles = StyleSheet.create({
   },
   statsTitle: {
     ...Typography.h2,
-    color: AppColors.text,
     textAlign: "center",
     marginBottom: 16,
   },
@@ -302,20 +343,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statNumber: {
-    ...Typography.status,
-    color: AppColors.success,
+    ...Typography.h1,
     marginBottom: 4,
   },
   statLabel: {
     ...Typography.caption,
-    color: AppColors.text,
     opacity: 0.7,
   },
   calendarContainer: {
-    backgroundColor: AppColors.white,
     borderRadius: 12,
     marginBottom: 16,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -329,16 +366,13 @@ const styles = StyleSheet.create({
   },
   calendarHeader: {
     ...Typography.h2,
-    color: AppColors.text,
     textAlign: "center",
     marginVertical: 16,
   },
   legendContainer: {
-    backgroundColor: AppColors.white,
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -349,7 +383,6 @@ const styles = StyleSheet.create({
   },
   legendTitle: {
     ...Typography.h2,
-    color: AppColors.text,
     marginBottom: 16,
   },
   legendItems: {
@@ -367,7 +400,6 @@ const styles = StyleSheet.create({
   },
   legendText: {
     ...Typography.body,
-    color: AppColors.text,
   },
   loadingContainer: {
     flex: 1,
@@ -377,7 +409,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     ...Typography.body,
-    color: AppColors.text,
     marginTop: 16,
     textAlign: "center",
   },

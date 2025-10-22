@@ -68,3 +68,93 @@ A tipografia deve ser de fácil leitura e transmitir uma sensação amigável.
   - **Dia Tomado:** Ponto ou círculo de fundo **Verde Menta** (\#4CAF50).
   - **Dia Perdido/Pendente:** Ponto ou círculo de fundo **Malva Escuro** (\#C67171).
   - **Dia Atual:** Borda destacada em Rosa Pêssego.
+
+## **4.5. Dark Mode**
+
+O aplicativo suporta modo escuro que mantém a identidade visual feminina e suave, adaptando as cores para um ambiente escuro sem perder a essência do design.
+
+### **4.5.1. Filosofia do Dark Mode**
+
+O dark mode foi projetado para:
+
+- **Manter a sensação suave e feminina** mesmo em ambiente escuro
+- **Preservar o rosa pêssego** como cor de ação principal (funciona bem em ambos os temas)
+- **Garantir contraste adequado** para legibilidade e acessibilidade
+- **Usar fundos escuros suaves** que não sejam puramente pretos
+
+### **4.5.2. Paleta de Cores Dark Mode**
+
+| Nome da Cor                 | Código HEX             | Uso Principal                                      | Papel/Função                                           |
+| :-------------------------- | :--------------------- | :------------------------------------------------- | :----------------------------------------------------- |
+| **Preto Suave (Base)**      | \#1A1A1A               | Fundo de todas as telas.                           | Base primária escura, oferece descanso visual noturno. |
+| **Cinza Escuro (Cards)**    | \#2D2D2D               | Fundo de cards e superfícies elevadas.             | Diferenciação sutil do fundo base.                     |
+| **Rosa Pêssego (Ação)**     | \#FF8FA3 (Rosa Escuro) | Botões de Confirmação, Ícones de Navegação Ativos. | **Versão escura** - melhor contraste no dark mode.     |
+| **Texto Principal**         | \#F5F5F5               | Títulos, textos longos e rótulos.                  | Alto contraste para leitura em fundo escuro.           |
+| **Texto Secundário**        | \#B0B0B0               | Textos de apoio, descrições.                       | Contraste médio para hierarquia visual.                |
+| **Verde Menta (Sucesso)**   | \#66BB6A               | Indicador de taken: true (Status e Calendário).    | Versão mais vibrante para melhor contraste no escuro.  |
+| **Malva Vibrante (Alerta)** | \#E57373               | Indicador de taken: false e notificação de Alerta. | Versão mais vibrante para melhor contraste no escuro.  |
+| **Bordas Sutis**            | \#404040               | Bordas de cards, separadores.                      | Diferenciação sutil sem ser intrusiva.                 |
+
+### **4.5.3. Adaptações Específicas para Dark Mode**
+
+#### **Cor de Ação (Rosa)**
+
+- **Light Mode**: `#FFB6C1` (Rosa Pêssego original) - mantém a identidade visual feminina
+- **Dark Mode**: `#FF8FA3` (Rosa Escuro) - versão mais escura e saturada para melhor contraste
+- **Justificativa**: O rosa original não oferecia contraste suficiente com texto branco em fundos escuros
+- **Resultado**: Melhora significativa na legibilidade mantendo a identidade rosa
+
+#### **Sombras e Elevação**
+
+- **Redução de sombras**: No dark mode, as sombras são reduzidas ou substituídas por bordas sutis
+- **Bordas como elevação**: Uso de `borderColor: colors.border` para criar separação visual
+- **Sombras adaptativas**: `shadowColor: colors.text` para sombras que se adaptam ao tema
+
+#### **Calendário**
+
+- **Fundo**: `backgroundColor: colors.surface` para o calendário
+- **Texto**: `dayTextColor: colors.text` para dias normais
+- **Dias desabilitados**: `textDisabledColor: colors.textSecondary`
+- **Dia atual**: `todayTextColor: colors.action` (rosa pêssego)
+
+#### **Modais e Overlays**
+
+- **Backdrop**: Mais escuro no dark mode para melhor contraste
+- **Cards internos**: `backgroundColor: colors.surface` para diferenciação
+- **Bordas**: `borderColor: colors.border` para separação sutil
+
+### **4.5.4. Controle de Tema**
+
+O aplicativo oferece três modos de tema:
+
+- **Light**: Tema claro padrão
+- **Dark**: Tema escuro
+- **System**: Segue automaticamente as configurações do sistema
+
+#### **Toggle de Tema**
+
+- **Localização**: Canto superior direito do header (quando habilitado)
+- **Ícones**: Sol (light), Lua (dark), Auto (system)
+- **Persistência**: Preferência salva localmente e mantida entre sessões
+- **Transições**: Mudanças suaves entre temas
+
+### **4.5.5. Tabela Comparativa Light vs Dark**
+
+| Elemento            | Light Mode              | Dark Mode               | Observações                           |
+| :------------------ | :---------------------- | :---------------------- | :------------------------------------ |
+| **Fundo Base**      | \#F5F5F5 (Branco Suave) | \#1A1A1A (Preto Suave)  | Ambos oferecem descanso visual        |
+| **Cards**           | \#FFFFFF (Branco Puro)  | \#2D2D2D (Cinza Escuro) | Diferenciação sutil em ambos          |
+| **Texto Principal** | \#333333 (Cinza Carvão) | \#F5F5F5 (Branco Suave) | Alto contraste em ambos               |
+| **Rosa Ação**       | \#FFB6C1                | \#FF8FA3                | **Rosa escuro** para melhor contraste |
+| **Sucesso**         | \#4CAF50                | \#66BB6A                | Mais vibrante no escuro               |
+| **Alerta**          | \#C67171                | \#E57373                | Mais vibrante no escuro               |
+| **Bordas**          | \#E0E0E0                | \#404040                | Sutis em ambos os temas               |
+
+### **4.5.6. Considerações de Acessibilidade**
+
+- **Contraste**: Todas as combinações de cores atendem aos padrões WCAG AA
+- **Legibilidade**: Textos mantêm excelente legibilidade em ambos os temas
+- **Botões primários**: Rosa escuro (`#FF8FA3`) no dark mode garante contraste adequado com texto branco
+- **Indicadores visuais**: Cores de status (sucesso/alerta) são claramente distinguíveis
+- **Navegação**: Elementos interativos mantêm contraste adequado
+- **Consistência**: Identidade rosa preservada com adaptações inteligentes para cada tema

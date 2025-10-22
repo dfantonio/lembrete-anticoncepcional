@@ -2,6 +2,10 @@
 
 export type UserRole = "GF_PILL_TAKER" | "BF_REMINDER";
 
+// Tipos para temas
+export type Theme = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 export type ObservationType =
   | "colica"
   | "sangramento"

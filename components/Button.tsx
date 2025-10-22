@@ -1,4 +1,5 @@
-import { AppColors, Typography } from "@/constants/theme";
+import { Typography } from "@/constants/theme";
+import { useAppTheme } from "@/src/contexts/ThemeContext";
 import React from "react";
 import {
   Animated,
@@ -28,6 +29,7 @@ export function Button({
   style,
   textStyle,
 }: ButtonProps) {
+  const { colors } = useAppTheme();
   const scaleValue = new Animated.Value(1);
 
   const getSizeStyles = () => {
@@ -82,6 +84,8 @@ export function Button({
           paddingVertical: sizeStyles.paddingVertical,
           paddingHorizontal: sizeStyles.paddingHorizontal,
           borderRadius: sizeStyles.borderRadius,
+          backgroundColor: "transparent",
+          borderColor: colors.action,
         },
         style,
       ];
@@ -93,6 +97,8 @@ export function Button({
         paddingVertical: sizeStyles.paddingVertical,
         paddingHorizontal: sizeStyles.paddingHorizontal,
         borderRadius: sizeStyles.borderRadius,
+        backgroundColor: colors.action,
+        shadowColor: colors.text,
       },
       style,
     ];
@@ -107,6 +113,7 @@ export function Button({
         disabled && styles.buttonTextOutlinedDisabled,
         {
           fontSize: sizeStyles.fontSize,
+          color: colors.action,
         },
         textStyle,
       ];
@@ -116,6 +123,7 @@ export function Button({
       disabled && styles.buttonTextDisabled,
       {
         fontSize: sizeStyles.fontSize,
+        color: colors.white,
       },
       textStyle,
     ];
@@ -140,13 +148,11 @@ export function Button({
 const styles = StyleSheet.create({
   // Estilos Primary (padrão)
   button: {
-    backgroundColor: AppColors.action,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 25, // Pill-shaped
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: AppColors.text,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -156,16 +162,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonDisabled: {
-    backgroundColor: AppColors.text,
     opacity: 0.3,
   },
   buttonText: {
     ...Typography.button,
-    color: AppColors.white,
     textAlign: "center",
   },
   buttonTextDisabled: {
-    color: AppColors.white,
     opacity: 0.7,
   },
 
@@ -173,7 +176,6 @@ const styles = StyleSheet.create({
   buttonOutlined: {
     backgroundColor: "transparent",
     borderWidth: 2,
-    borderColor: AppColors.action,
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 25, // Pill-shaped
@@ -181,16 +183,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   buttonOutlinedDisabled: {
-    borderColor: AppColors.text,
     opacity: 0.3,
   },
   buttonTextOutlined: {
     ...Typography.button,
-    color: AppColors.action,
     textAlign: "center",
   },
   buttonTextOutlinedDisabled: {
-    color: AppColors.text,
     opacity: 0.5,
   },
 });

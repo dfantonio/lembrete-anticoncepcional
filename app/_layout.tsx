@@ -4,13 +4,15 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-import { AppColors } from "@/constants/theme";
+import { ThemeProvider, useAppTheme } from "@/src/contexts/ThemeContext";
 import { ScreenName } from "@/src/types";
 import { useEffect } from "react";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function AppContent() {
+  const { theme, colors } = useAppTheme();
+
   useEffect(() => {
     console.log("Inicializando aplicação...");
     SplashScreen.hide();
@@ -18,7 +20,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: AppColors.base }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.base }}>
         <Stack
           screenOptions={{
             headerShown: false,
@@ -31,8 +33,19 @@ export default function RootLayout() {
           <Stack.Screen name={ScreenName.MainBF} />
           <Stack.Screen name={ScreenName.CalendarHistory} />
         </Stack>
-        <StatusBar style="dark" backgroundColor={AppColors.base} />
+        <StatusBar
+          style={theme === "dark" ? "light" : "dark"}
+          backgroundColor={colors.base}
+        />
       </SafeAreaView>
     </SafeAreaProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
