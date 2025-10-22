@@ -1,7 +1,7 @@
 import { AppColors, Typography } from "@/constants/theme";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { IconSymbol } from "./ui/icon-symbol";
 
 interface AppHeaderProps {
   title: string;
@@ -18,7 +18,7 @@ export function AppHeader({ title, showBack = false, onBack }: AppHeaderProps) {
           onPress={onBack}
           activeOpacity={0.7}
         >
-          <IconSymbol name="chevron.left" size={24} color={AppColors.text} />
+          <MaterialIcons name="chevron-left" size={24} color={AppColors.text} />
         </TouchableOpacity>
       )}
       <Text style={styles.title}>{title}</Text>

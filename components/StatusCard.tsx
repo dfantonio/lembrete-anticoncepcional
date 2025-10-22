@@ -1,7 +1,7 @@
 import { AppColors, Typography } from "@/constants/theme";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
-import { IconSymbol } from "./ui/icon-symbol";
 
 interface StatusCardProps {
   taken: boolean;
@@ -19,13 +19,17 @@ export function StatusCard({ taken, takenTime, style }: StatusCardProps) {
   };
 
   const getStatusIcon = () => {
-    return taken ? "checkmark.circle.fill" : "exclamationmark.circle.fill";
+    return taken ? "check-circle" : "error";
   };
 
   return (
     <View style={[styles.card, style]}>
       <View style={styles.statusContainer}>
-        <IconSymbol name={getStatusIcon()} size={32} color={getStatusColor()} />
+        <MaterialIcons
+          name={getStatusIcon()}
+          size={32}
+          color={getStatusColor()}
+        />
         <View style={styles.textContainer}>
           <Text style={[styles.statusText, { color: getStatusColor() }]}>
             {getStatusText()}
@@ -57,14 +61,14 @@ const styles = StyleSheet.create({
   statusContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
   },
   textContainer: {
     marginLeft: 16,
-    flex: 1,
+    // flex: 1,
   },
   statusText: {
     ...Typography.h1,
-    marginBottom: 4,
   },
   timeText: {
     ...Typography.body,
