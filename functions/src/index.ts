@@ -112,40 +112,77 @@ async function checkAndSendPillReminder() {
       throw new Error("Usuário BF não encontrado");
     }
 
-    const bfUser = bfQuery.docs[0].data();
-    logger.info("👤 Usuário BF encontrado:", bfUser);
+    const bfUsers = bfQuery.docs.map((doc) => ({
+      id: doc.id,
+      data: doc.data(),
+    }));
+    logger.info(`👤 ${bfUsers.length} usuário(s) BF encontrado(s):`, bfUsers);
 
-    if (!bfUser.pushToken) {
-      logger.error("❌ BF não tem push token configurado");
-      throw new Error("BF não tem push token configurado");
+    // 5. Enviar notificação para todos os usuários BF
+    const notifications = [];
+    const validUsers = [];
+
+    for (const bfUser of bfUsers) {
+      if (!bfUser.data.pushToken) {
+        logger.warn(
+          `⚠️ Usuário BF ${bfUser.id} não tem push token configurado`
+        );
+        continue;
+      }
+
+      const notification = {
+        to: bfUser.data.pushToken,
+        title: "🚨 ALERTA: Pílula não tomada!",
+        body: `A pílula anticoncepcional não foi confirmada hoje (${today}). Verifique com a GF!`,
+        sound: "default",
+        priority: "high",
+        data: {
+          date: today,
+          type: "pill_reminder",
+        },
+      };
+
+      notifications.push(notification);
+      validUsers.push({
+        userId: bfUser.id,
+        platform: bfUser.data.platform,
+      });
     }
 
-    // 5. Enviar notificação via Expo Push API
-    const notification = {
-      to: bfUser.pushToken,
-      title: "🚨 ALERTA: Pílula não tomada!",
-      body: `A pílula anticoncepcional não foi confirmada hoje (${today}). Verifique com a GF!`,
-      sound: "default",
-      priority: "high",
-      data: {
-        date: today,
-        type: "pill_reminder",
-      },
-    };
+    if (notifications.length === 0) {
+      logger.error("❌ Nenhum usuário BF válido com push token encontrado");
+      throw new Error("Nenhum usuário BF válido com push token encontrado");
+    }
 
-    const response = await axios.post(
-      "https://exp.host/--/api/v2/push/send",
-      notification,
-      {
-        headers: {
-          Accept: "application/json",
-          "Accept-encoding": "gzip, deflate",
-          "Content-Type": "application/json",
-        },
+    // Enviar todas as notificações
+    const responses = [];
+    for (const notification of notifications) {
+      try {
+        const response = await axios.post(
+          "https://exp.host/--/api/v2/push/send",
+          notification,
+          {
+            headers: {
+              Accept: "application/json",
+              "Accept-encoding": "gzip, deflate",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        responses.push(response.data);
+        logger.info("✅ Notificação enviada para um usuário BF");
+      } catch (error) {
+        logger.error(
+          "❌ Erro ao enviar notificação para um usuário BF:",
+          error
+        );
+        // Continue enviando para outros usuários mesmo se um falhar
       }
-    );
+    }
 
-    logger.info("✅ Notificação enviada:", response.data);
+    logger.info(
+      `✅ ${responses.length} notificação(ões) enviada(s) com sucesso`
+    );
 
     // 6. Marcar alertSent como true
     await dailyLogRef.update({
@@ -157,12 +194,9 @@ async function checkAndSendPillReminder() {
 
     return {
       action: "notification_sent",
-      message: "Notificação enviada com sucesso",
-      notification: response.data,
-      bfUser: {
-        userId: bfQuery.docs[0].id,
-        platform: bfUser.platform,
-      },
+      message: `${responses.length} notificação(ões) enviada(s) com sucesso`,
+      notifications: responses,
+      bfUsers: validUsers,
     };
   } else {
     const reason = dailyLog?.taken
