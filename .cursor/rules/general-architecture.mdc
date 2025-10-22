@@ -14,8 +14,8 @@ O principal objetivo deste projeto é criar um aplicativo pessoal de lembrete de
 
 ### **Fluxo de Uso Desejado**
 
-1. **20:00:** GF recebe um lembrete no seu telefone (iOS/Android).
-2. **20:00 \- 22:00:** GF toma a pílula e marca o status no aplicativo.
+1. **21:00:** GF recebe um lembrete no seu telefone (iOS/Android).
+2. **21:00 \- 22:00:** GF toma a pílula e marca o status no aplicativo.
 3. **22:01:** Se o status **NÃO** for marcado, o BF deve receber um alerta **automático e confiável** em seu telefone (Android).
 
 ### **Restrição Crítica de Arquitetura**
@@ -24,7 +24,7 @@ A principal restrição de design é a **necessidade de evitar a taxa anual de $
 
 Esta restrição forçou a adoção de uma arquitetura híbrida:
 
-- **GF (iOS):** Depende de Notificações **Locais** (dentro do Expo Go) para o lembrete das 20:00.
+- **GF (iOS):** Depende de Notificações **Locais** (dentro do Expo Go) para o lembrete das 21:00.
 - **BF (Android):** Depende do **Firebase Cloud Functions (Servidor)** para disparar o alerta das 22:00 via Push Notification (garantindo a automação sem depender do app estar aberto).
 
 ## **1.2. Visão Geral**
@@ -32,7 +32,7 @@ Esta restrição forçou a adoção de uma arquitetura híbrida:
 O projeto adota uma arquitetura _Serverless_ (sem servidor tradicional) onde a sincronização de dados e a automação das notificações críticas são delegadas ao **Firebase** (Backend as a Service), enquanto a experiência do usuário e as notificações locais são gerenciadas pelo **React Native (Expo)**.
 
 | Componente | Função | Tecnologias Chave |  
-| Mobile App (Frontend) | Interface, Notificações Locais (20:00 \- GF), Leitura de Status em Tempo Real. | React Native, Expo Go (iOS), EAS Build (Android), Expo Notifications. |  
+| Mobile App (Frontend) | Interface, Notificações Locais (21:00 \- GF), Leitura de Status em Tempo Real. | React Native, Expo Go (iOS), EAS Build (Android), Expo Notifications. |  
 | Banco de Dados (DB) | Fonte da Verdade para o status diário e histórico de tomada. | Firebase Firestore (Plano Spark). |  
 | Automação (Backend) | Disparo automático da notificação de alerta (22:00 \- BF). | Firebase Cloud Functions (Agendada), Expo Push API. |
 

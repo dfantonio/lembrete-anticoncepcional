@@ -36,7 +36,7 @@ O aplicativo terá três telas principais, acessíveis via navegação
   - **Botão de Ação:** Botão grande e claro: "Pílula Tomada".
   - **Botão de Histórico:** Navega para a tela Calendar History.
 - **Lógica Principal:**
-  - No useEffect de montagem/atualização, agenda a **Notificação Local Diária para 20:00**.
+  - No useEffect de montagem/atualização, agenda a **Notificação Local Diária para 21:00**.
 
 ### **Tela C: Principal do Lembrete (Main BF Screen)**
 
@@ -59,10 +59,10 @@ O aplicativo terá três telas principais, acessíveis via navegação
 
 ## **3.3. Implementação de Notificações**
 
-### **Notificação Padrão de Alto Alerta (20:00 \- Namorada)**
+### **Notificação Padrão de Alto Alerta (21:00 \- Namorada)**
 
 - **Tipo:** Local (não requer servidor).
-- **Agenda:** Agendada diariamente no código da GF, com a propriedade repeats: true e hour: 20, minute: 0\.
+- **Agenda:** Agendada diariamente no código da GF, com a propriedade repeats: true e hour: 21, minute: 0\.
 - **Cancelamento:** A notificação é **cancelada imediatamente** via Notifications.cancelAllScheduledNotificationsAsync() assim que a GF pressiona o botão "Pílula Tomada".
 
 ### **Notificação Automática (22:00 \- Você)**

@@ -42,7 +42,7 @@ export class NotificationService {
   }
 
   /**
-   * Agenda notificações semanais individuais para 20:00 (GF)
+   * Agenda notificações semanais individuais para 21:00 (GF)
    * Verifica se a pílula já foi tomada hoje antes de agendar
    */
   static async scheduleWeeklyNotifications(): Promise<void> {
