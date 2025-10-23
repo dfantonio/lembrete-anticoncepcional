@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -21,11 +21,7 @@ export default function MainGFScreen() {
     ObservationType[]
   >([]);
 
-  useEffect(() => {
-    initializeScreen();
-  }, []);
-
-  const initializeScreen = async () => {
+  const initializeScreen = useCallback(async () => {
     try {
       // Verificar autenticação
       const userId = AuthService.getCurrentUserId();
@@ -40,7 +36,7 @@ export default function MainGFScreen() {
       await NotificationService.scheduleWeeklyNotifications();
 
       // Observar mudanças no log diário
-      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const today = getLocalDateString(new Date()); // YYYY-MM-DD no timezone local
       const unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
         setDailyLog(log);
       });
@@ -49,7 +45,11 @@ export default function MainGFScreen() {
     } catch (error) {
       console.error("❌ Erro na inicialização da tela GF:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    initializeScreen();
+  }, [initializeScreen]);
 
   const handlePillTaken = async () => {
     try {
@@ -61,8 +61,8 @@ export default function MainGFScreen() {
       }
 
       const now = new Date();
-      const dateKey = now.toISOString().split("T")[0]; // YYYY-MM-DD
-      const timeString = now.toTimeString().split(" ")[0].substring(0, 5); // HH:MM
+      const dateKey = getLocalDateString(now); // YYYY-MM-DD no timezone local
+      const timeString = getLocalTimeString(now); // HH:MM no timezone local
 
       const newLog: DailyLog = {
         dateKey,
@@ -173,6 +173,21 @@ export default function MainGFScreen() {
     </ScrollView>
   );
 }
+
+// Função utilitária para obter a data no timezone local
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// Função utilitária para obter a hora no timezone local
+const getLocalTimeString = (date: Date): string => {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
 
 const styles = StyleSheet.create({
   container: {
