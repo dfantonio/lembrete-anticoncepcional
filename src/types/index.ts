@@ -7,6 +7,7 @@ export type Theme = "light" | "dark";
 export type ThemeMode = "light" | "dark" | "system";
 
 export type ObservationType =
+  | "dor_cabeca"
   | "colica"
   | "sangramento"
   | "corrimento"

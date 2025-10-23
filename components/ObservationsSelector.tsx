@@ -27,6 +27,7 @@ export function ObservationsSelector({
     "dor_seio",
     "dor_costas",
     "dor_pernas",
+    "dor_cabeca",
     "espinha",
     "sexo_protegido",
     "sexo_sem_protecao",
