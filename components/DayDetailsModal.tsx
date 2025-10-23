@@ -41,6 +41,10 @@ export function DayDetailsModal({
     ObservationType[]
   >(dailyLog?.observations || []);
   const [isLoading, setIsLoading] = useState(false);
+  const [showObservationsDialog, setShowObservationsDialog] = useState(false);
+  const [tempObservations, setTempObservations] = useState<ObservationType[]>(
+    []
+  );
 
   const handleEditObservations = () => {
     setIsEditing(true);
@@ -80,6 +84,64 @@ export function DayDetailsModal({
   const handleCancelEdit = () => {
     setIsEditing(false);
     setSelectedObservations(dailyLog?.observations || []);
+  };
+
+  const handleRegisterPill = () => {
+    Alert.alert(
+      "Registrar Pílula",
+      "Deseja adicionar observações para este dia?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Não",
+          onPress: () => handleConfirmRegister([]),
+        },
+        {
+          text: "Sim",
+          onPress: () => {
+            setTempObservations([]);
+            setShowObservationsDialog(true);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleConfirmRegister = async (observations: ObservationType[]) => {
+    try {
+      setIsLoading(true);
+
+      const retroactiveLog: DailyLog = {
+        dateKey: dateKey,
+        taken: true,
+        takenTime: "20:00",
+        alertSent: true,
+        ...(observations.length > 0 && { observations }),
+      };
+
+      await FirestoreService.saveDailyLog(dateKey, retroactiveLog);
+      onDataChanged();
+
+      Alert.alert("Sucesso", "Pílula registrada com sucesso!");
+    } catch (error) {
+      console.error("❌ Erro ao registrar pílula:", error);
+      Alert.alert(
+        "Erro",
+        "Não foi possível registrar a pílula. Tente novamente."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveObservationsAndRegister = () => {
+    setShowObservationsDialog(false);
+    handleConfirmRegister(tempObservations);
+  };
+
+  const handleCancelObservationsDialog = () => {
+    setShowObservationsDialog(false);
+    setTempObservations([]);
   };
 
   const handleDeleteRecord = () => {
@@ -122,6 +184,14 @@ export function DayDetailsModal({
       month: "long",
       day: "numeric",
     });
+  };
+
+  const isPastDay = (dateKey: string): boolean => {
+    const [year, month, day] = dateKey.split("-");
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
   };
 
   const renderObservations = () => {
@@ -276,8 +346,17 @@ export function DayDetailsModal({
           </View>
 
           {/* Ações */}
-          {dailyLog?.taken && (
-            <View style={styles.actionsSection}>
+          <View style={styles.actionsSection}>
+            {/* Registro Retroativo */}
+            {!dailyLog?.taken && isPastDay(dateKey) && (
+              <Button
+                title="Registrar Pílula Tomada"
+                onPress={handleRegisterPill}
+                disabled={isLoading}
+              />
+            )}
+
+            {dailyLog?.taken && (
               <TouchableOpacity
                 onPress={handleDeleteRecord}
                 style={[
@@ -288,10 +367,76 @@ export function DayDetailsModal({
               >
                 <Text style={styles.deleteButtonText}>🗑️ Excluir Registro</Text>
               </TouchableOpacity>
-            </View>
-          )}
+            )}
+          </View>
         </View>
       </SafeAreaView>
+
+      {/* Modal de Observações para Registro Retroativo */}
+      <Modal
+        visible={showObservationsDialog}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={handleCancelObservationsDialog}
+      >
+        <SafeAreaView
+          style={[styles.container, { backgroundColor: colors.base }]}
+        >
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
+            <TouchableOpacity
+              onPress={handleCancelObservationsDialog}
+              style={styles.closeButton}
+            >
+              <Text style={[styles.closeButtonText, { color: colors.text }]}>
+                ✕
+              </Text>
+            </TouchableOpacity>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
+              Adicionar Observações
+            </Text>
+            <View style={styles.placeholder} />
+          </View>
+
+          <View style={styles.content}>
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Selecione as observações para este dia:
+              </Text>
+              <View
+                style={[
+                  styles.editingContainer,
+                  { backgroundColor: colors.surface, shadowColor: colors.text },
+                ]}
+              >
+                <ObservationsSelector
+                  selectedObservations={tempObservations}
+                  onToggleObservation={(obs) => {
+                    setTempObservations((prev) =>
+                      prev.includes(obs)
+                        ? prev.filter((o) => o !== obs)
+                        : [...prev, obs]
+                    );
+                  }}
+                />
+
+                <View style={styles.editActions}>
+                  <Button
+                    variant="outlined"
+                    title="Cancelar"
+                    onPress={handleCancelObservationsDialog}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    title="Registrar"
+                    onPress={handleSaveObservationsAndRegister}
+                    disabled={isLoading}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </Modal>
   );
 }
