@@ -15,13 +15,14 @@ import { Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog } from "@/src/types";
+import { formatDateKey } from "@/src/utils/dateUtils";
 
 export default function CalendarHistoryScreen() {
   const { colors, theme } = useAppTheme();
   const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedDailyLog, setSelectedDailyLog] = useState<DailyLog | null>(
     null
   );
@@ -57,7 +58,7 @@ export default function CalendarHistoryScreen() {
 
   const handleModalClose = () => {
     setModalVisible(false);
-    setSelectedDate("");
+    setSelectedDate(null);
     setSelectedDailyLog(null);
   };
 
@@ -104,7 +105,7 @@ export default function CalendarHistoryScreen() {
     });
 
     // Destacar dia atual
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatDateKey();
     if (marked[today]) {
       marked[today].customStyles.container.borderColor = colors.action;
       marked[today].customStyles.container.borderWidth = 2;

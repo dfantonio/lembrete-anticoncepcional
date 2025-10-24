@@ -19,12 +19,13 @@ import { Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog, ObservationType } from "@/src/types";
+import { formatDateForDisplay, isPastDate } from "@/src/utils/dateUtils";
 
 interface DayDetailsModalProps {
   visible: boolean;
   onClose: () => void;
   dailyLog: DailyLog | null;
-  dateKey: string;
+  dateKey: string | null;
   onDataChanged: () => void;
 }
 
@@ -52,6 +53,10 @@ export function DayDetailsModal({
   };
 
   const handleSaveObservations = async () => {
+    if (!dateKey) {
+      throw new Error("Data não encontrada");
+    }
+
     try {
       setIsLoading(true);
 
@@ -108,6 +113,10 @@ export function DayDetailsModal({
   };
 
   const handleConfirmRegister = async (observations: ObservationType[]) => {
+    if (!dateKey) {
+      throw new Error("Data não encontrada");
+    }
+
     try {
       setIsLoading(true);
 
@@ -145,6 +154,10 @@ export function DayDetailsModal({
   };
 
   const handleDeleteRecord = () => {
+    if (!dateKey) {
+      throw new Error("Data não encontrada");
+    }
+
     Alert.alert(
       "Excluir Registro",
       "Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.",
@@ -173,25 +186,6 @@ export function DayDetailsModal({
         },
       ]
     );
-  };
-
-  const formatDate = (dateKey: string) => {
-    const [year, month, day] = dateKey.split("-");
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    return date.toLocaleDateString("pt-BR", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const isPastDay = (dateKey: string): boolean => {
-    const [year, month, day] = dateKey.split("-");
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return date < today;
   };
 
   const renderObservations = () => {
@@ -256,7 +250,7 @@ export function DayDetailsModal({
               Data
             </Text>
             <Text style={[styles.dateText, { color: colors.text }]}>
-              {formatDate(dateKey)}
+              {formatDateForDisplay(dateKey)}
             </Text>
           </View>
 
@@ -348,7 +342,7 @@ export function DayDetailsModal({
           {/* Ações */}
           <View style={styles.actionsSection}>
             {/* Registro Retroativo */}
-            {!dailyLog?.taken && isPastDay(dateKey) && (
+            {!dailyLog?.taken && isPastDate(dateKey) && (
               <Button
                 title="Registrar Pílula Tomada"
                 onPress={handleRegisterPill}

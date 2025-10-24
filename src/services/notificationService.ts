@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { formatDateKey } from "../utils/dateUtils";
 import { AuthService } from "./authService";
 import { FirestoreService } from "./firestoreService";
 
@@ -51,7 +52,7 @@ export class NotificationService {
       await Notifications.cancelAllScheduledNotificationsAsync();
 
       // Verificar se a pílula já foi tomada hoje
-      const today = new Date().toISOString().split("T")[0];
+      const today = formatDateKey();
       const todayLog = await FirestoreService.getDailyLog(today);
       const pillTakenToday = todayLog?.taken || false;
 
@@ -71,7 +72,7 @@ export class NotificationService {
         date.setDate(date.getDate() + i);
         date.setHours(21, 0, 0, 0);
 
-        const dateKey = date.toISOString().split("T")[0];
+        const dateKey = formatDateKey(date);
 
         // Verificar se a data não é no passado
         if (date.getTime() <= Date.now()) {
@@ -105,7 +106,7 @@ export class NotificationService {
    */
   static async cancelTodayNotification(): Promise<void> {
     try {
-      const today = new Date().toISOString().split("T")[0];
+      const today = formatDateKey();
       const notificationId = `pill-reminder-${today}`;
 
       await Notifications.cancelScheduledNotificationAsync(notificationId);

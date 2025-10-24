@@ -12,6 +12,7 @@ import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
 import { DailyLog, ObservationType, ScreenName } from "@/src/types";
+import { formatDateKey, formatTimeString } from "@/src/utils/dateUtils";
 
 export default function MainGFScreen() {
   const { colors } = useAppTheme();
@@ -36,7 +37,7 @@ export default function MainGFScreen() {
       await NotificationService.scheduleWeeklyNotifications();
 
       // Observar mudanças no log diário
-      const today = getLocalDateString(new Date()); // YYYY-MM-DD no timezone local
+      const today = formatDateKey(); // YYYY-MM-DD no timezone local
       const unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
         setDailyLog(log);
       });
@@ -61,8 +62,8 @@ export default function MainGFScreen() {
       }
 
       const now = new Date();
-      const dateKey = getLocalDateString(now); // YYYY-MM-DD no timezone local
-      const timeString = getLocalTimeString(now); // HH:MM no timezone local
+      const dateKey = formatDateKey(now); // YYYY-MM-DD no timezone local
+      const timeString = formatTimeString(now); // HH:MM no timezone local
 
       const newLog: DailyLog = {
         dateKey,
@@ -173,21 +174,6 @@ export default function MainGFScreen() {
     </ScrollView>
   );
 }
-
-// Função utilitária para obter a data no timezone local
-const getLocalDateString = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-// Função utilitária para obter a hora no timezone local
-const getLocalTimeString = (date: Date): string => {
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`;
-};
 
 const styles = StyleSheet.create({
   container: {
