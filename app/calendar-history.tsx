@@ -265,11 +265,6 @@ export default function CalendarHistoryScreen() {
             Ciclo Atual
           </Text>
           <View style={styles.menstruationCard}>
-            <Text style={[styles.menstruationNumber, { color: colors.action }]}>
-              {menstruationInfo.daysRemaining !== null
-                ? menstruationInfo.daysRemaining
-                : "?"}
-            </Text>
             <Text style={[styles.menstruationLabel, { color: colors.text }]}>
               {menstruationInfo.message}
             </Text>
@@ -402,18 +397,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statsTitle: {
-    ...Typography.h2,
+    ...Typography.h1,
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 8,
   },
   menstruationCard: {
     alignItems: "center",
-    paddingVertical: 8,
   },
   menstruationNumber: {
     ...Typography.h1,
     marginBottom: 8,
-    fontSize: 48,
   },
   menstruationLabel: {
     ...Typography.h2,
