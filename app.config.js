@@ -1,19 +1,59 @@
 export default {
-  android: {
-    googleServicesFile:
-      process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
-  },
   expo: {
+    name: "Lembrete Anticoncepcional",
+    slug: "lembrete-anticoncepcional",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/logo/logo.png",
+    scheme: "lembreteanticoncepcional",
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.dfantonio.lembreteanticoncepcional",
+    },
+    android: {
+      adaptiveIcon: {
+        backgroundColor: "#F5F5F5",
+        foregroundImage: "./assets/logo/logo.png",
+      },
+      edgeToEdgeEnabled: true,
+      predictiveBackGestureEnabled: false,
+      package: "com.dfantonio.lembreteanticoncepcional",
+      googleServicesFile:
+        process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
+    },
+    plugins: [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/logo/logo.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#F5F5F5",
+          dark: {
+            backgroundColor: "#F5F5F5",
+          },
+        },
+      ],
+    ],
+    experiments: {
+      typedRoutes: true,
+      reactCompiler: true,
+    },
     extra: {
+      router: {},
       eas: {
         projectId: "d5aa500e-4157-4f25-908c-8c7bf12a406d",
       },
     },
-    android: {
-      package: "com.dfantonio.lembreteanticoncepcional",
+    owner: "dfantonio",
+    runtimeVersion: {
+      policy: "appVersion",
     },
-    ios: {
-      bundleIdentifier: "com.dfantonio.lembreteanticoncepcional",
+    updates: {
+      url: "https://u.expo.dev/d5aa500e-4157-4f25-908c-8c7bf12a406d",
     },
   },
 };
