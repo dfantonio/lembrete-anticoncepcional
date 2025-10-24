@@ -12,5 +12,8 @@ export default {
     android: {
       package: "com.dfantonio.lembreteanticoncepcional",
     },
+    ios: {
+      bundleIdentifier: "com.dfantonio.lembreteanticoncepcional",
+    },
   },
 };
