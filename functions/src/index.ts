@@ -1,4 +1,5 @@
 import axios from "axios";
+import { format } from "date-fns";
 import * as admin from "firebase-admin";
 import { onRequest } from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
@@ -66,7 +67,7 @@ export const testPillReminder = onRequest(async (req, res) => {
  */
 async function checkAndSendPillReminder() {
   // 1. Obter data atual (YYYY-MM-DD)
-  const today = new Date().toISOString().split("T")[0];
+  const today = format(new Date(), "yyyy-MM-dd");
   logger.info(`📅 Verificando data: ${today}`);
 
   // 2. Buscar daily_log do dia
@@ -133,7 +134,7 @@ async function checkAndSendPillReminder() {
       const notification = {
         to: bfUser.data.pushToken,
         title: "🚨 ALERTA: Pílula não tomada!",
-        body: `A pílula anticoncepcional não foi confirmada hoje (${today}). Verifique com a GF!`,
+        body: `A pílula anticoncepcional não foi confirmada hoje. Verifique com a Sasa!`,
         sound: "default",
         priority: "high",
         data: {
