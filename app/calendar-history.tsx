@@ -72,12 +72,16 @@ export default function CalendarHistoryScreen() {
 
     dailyLogs.forEach((log) => {
       if (log.taken) {
+        // Determinar cor baseada no tipo de pílula
+        const pillColor =
+          log.pillType === "placebo" ? colors.placebo : colors.success;
+
         marked[log.dateKey] = {
           marked: true,
-          dotColor: colors.success,
+          dotColor: pillColor,
           customStyles: {
             container: {
-              backgroundColor: colors.success,
+              backgroundColor: pillColor,
               borderRadius: 16,
             },
             text: {
@@ -124,16 +128,80 @@ export default function CalendarHistoryScreen() {
     return marked;
   };
 
-  const getStatistics = () => {
-    const total = dailyLogs.length;
-    const taken = dailyLogs.filter((log) => log.taken).length;
-    const missed = total - taken;
-    const percentage = total > 0 ? Math.round((taken / total) * 100) : 0;
+  const calculateDaysToMenstruation = () => {
+    if (dailyLogs.length === 0) {
+      return {
+        daysRemaining: null,
+        message: "Nenhum histórico encontrado",
+        hasData: false,
+      };
+    }
 
-    return { total, taken, missed, percentage };
+    // Ordenar logs por data (mais recente primeiro)
+    const sortedLogs = [...dailyLogs].sort(
+      (a, b) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime()
+    );
+
+    // Buscar último placebo registrado
+    const lastPlaceboIndex = sortedLogs.findIndex(
+      (log) => log.taken && log.pillType === "placebo"
+    );
+
+    if (lastPlaceboIndex === -1) {
+      // Se não há placebo registrado, assumir que está no início do ciclo
+      // Contar dias ativos tomados
+      const activeDays = sortedLogs.filter(
+        (log) => log.taken && log.pillType === "active"
+      ).length;
+
+      const daysRemaining = Math.max(0, 24 - activeDays);
+
+      return {
+        daysRemaining,
+        message:
+          daysRemaining > 0
+            ? `${daysRemaining} dias de ativos restantes`
+            : "Próximo placebo em breve",
+        hasData: true,
+      };
+    }
+
+    // Calcular dias desde o último placebo
+    const lastPlaceboDate = new Date(sortedLogs[lastPlaceboIndex].dateKey);
+    const today = new Date();
+    const daysSincePlacebo = Math.floor(
+      (today.getTime() - lastPlaceboDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Ciclo: 4 dias placebo + 24 dias ativos = 28 dias total
+    const cyclePosition = daysSincePlacebo % 28;
+
+    if (cyclePosition < 4) {
+      // Ainda nos dias de placebo
+      return {
+        daysRemaining: 0,
+        message: "Período de placebo",
+        hasData: true,
+      };
+    } else if (cyclePosition < 28) {
+      // Nos dias ativos
+      const activeDaysRemaining = 28 - cyclePosition;
+      return {
+        daysRemaining: activeDaysRemaining,
+        message: `${activeDaysRemaining} dias até menstruar`,
+        hasData: true,
+      };
+    } else {
+      // Ciclo completo, próximo placebo
+      return {
+        daysRemaining: 0,
+        message: "Próximo placebo em breve",
+        hasData: true,
+      };
+    }
   };
 
-  const stats = getStatistics();
+  const menstruationInfo = calculateDaysToMenstruation();
 
   const calendarTheme = {
     backgroundColor: colors.surface,
@@ -194,33 +262,27 @@ export default function CalendarHistoryScreen() {
           ]}
         >
           <Text style={[styles.statsTitle, { color: colors.text }]}>
-            Últimos 30 dias
+            Ciclo Atual
           </Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={[styles.statNumber, { color: colors.success }]}>
-                {stats.taken}
+          <View style={styles.menstruationCard}>
+            <Text style={[styles.menstruationNumber, { color: colors.action }]}>
+              {menstruationInfo.daysRemaining !== null
+                ? menstruationInfo.daysRemaining
+                : "?"}
+            </Text>
+            <Text style={[styles.menstruationLabel, { color: colors.text }]}>
+              {menstruationInfo.message}
+            </Text>
+            {!menstruationInfo.hasData && (
+              <Text
+                style={[
+                  styles.menstruationSubtext,
+                  { color: colors.textSecondary },
+                ]}
+              >
+                Registre alguns dias para ver o progresso do seu ciclo
               </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>
-                Tomadas
-              </Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={[styles.statNumber, { color: colors.alert }]}>
-                {stats.missed}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>
-                Perdidas
-              </Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={[styles.statNumber, { color: colors.action }]}>
-                {stats.percentage}%
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.text }]}>
-                Taxa de Sucesso
-              </Text>
-            </View>
+            )}
           </View>
         </View>
 
@@ -269,7 +331,15 @@ export default function CalendarHistoryScreen() {
                 style={[styles.legendDot, { backgroundColor: colors.success }]}
               />
               <Text style={[styles.legendText, { color: colors.text }]}>
-                Pílula tomada
+                Ativo tomado
+              </Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View
+                style={[styles.legendDot, { backgroundColor: colors.placebo }]}
+              />
+              <Text style={[styles.legendText, { color: colors.text }]}>
+                Placebo tomado
               </Text>
             </View>
             <View style={styles.legendItem}>
@@ -336,20 +406,25 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 16,
   },
-  statsGrid: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-  statCard: {
+  menstruationCard: {
     alignItems: "center",
+    paddingVertical: 8,
   },
-  statNumber: {
+  menstruationNumber: {
     ...Typography.h1,
+    marginBottom: 8,
+    fontSize: 48,
+  },
+  menstruationLabel: {
+    ...Typography.h2,
+    textAlign: "center",
     marginBottom: 4,
   },
-  statLabel: {
+  menstruationSubtext: {
     ...Typography.caption,
+    textAlign: "center",
     opacity: 0.7,
+    marginTop: 8,
   },
   calendarContainer: {
     borderRadius: 12,

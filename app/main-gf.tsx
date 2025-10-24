@@ -5,13 +5,15 @@ import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
 import { ObservationsSelector } from "@/components/ObservationsSelector";
+import { SplitButton } from "@/components/SplitButton";
 import { StatusCard } from "@/components/StatusCard";
 import { Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
-import { DailyLog, ObservationType, ScreenName } from "@/src/types";
+import { StorageService } from "@/src/services/storageService";
+import { DailyLog, ObservationType, PillType, ScreenName } from "@/src/types";
 import { formatDateKey, formatTimeString } from "@/src/utils/dateUtils";
 
 export default function MainGFScreen() {
@@ -21,6 +23,7 @@ export default function MainGFScreen() {
   const [selectedObservations, setSelectedObservations] = useState<
     ObservationType[]
   >([]);
+  const [selectedPillType, setSelectedPillType] = useState<PillType>("active");
 
   const initializeScreen = useCallback(async () => {
     try {
@@ -30,6 +33,10 @@ export default function MainGFScreen() {
         router.replace(`/${ScreenName.RoleSelect}`);
         return;
       }
+
+      // Carregar último tipo de pílula selecionado
+      const lastPillType = await StorageService.getLastPillType();
+      setSelectedPillType(lastPillType);
 
       // Solicitar permissões de notificação
       await NotificationService.requestPermissions();
@@ -70,11 +77,15 @@ export default function MainGFScreen() {
         taken: true,
         takenTime: timeString,
         alertSent: false,
+        pillType: selectedPillType,
         observations: selectedObservations,
       };
 
       // Salvar no Firestore
       await FirestoreService.saveDailyLog(dateKey, newLog);
+
+      // Salvar última escolha de tipo de pílula
+      await StorageService.setLastPillType(selectedPillType);
 
       // Cancelar notificação de hoje (já foi tomada)
       await NotificationService.cancelTodayNotification();
@@ -109,6 +120,10 @@ export default function MainGFScreen() {
     );
   };
 
+  const handlePillTypeChange = (pillType: PillType) => {
+    setSelectedPillType(pillType);
+  };
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.base }]}
@@ -141,8 +156,9 @@ export default function MainGFScreen() {
           {/* Botão de ação */}
           <View style={styles.actionSection}>
             {!dailyLog?.taken && (
-              <Button
-                title="Registrar Pílula Tomada"
+              <SplitButton
+                pillType={selectedPillType}
+                onSelect={handlePillTypeChange}
                 onPress={handlePillTaken}
                 disabled={isLoading}
                 size="large"

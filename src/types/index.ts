@@ -5,6 +5,7 @@ export type UserRole = "GF_PILL_TAKER" | "BF_REMINDER";
 // Tipos para temas
 export type Theme = "light" | "dark";
 export type ThemeMode = "light" | "dark" | "system";
+export type PillType = "active" | "placebo";
 
 export type ObservationType =
   | "dor_cabeca"
@@ -29,6 +30,7 @@ export interface DailyLog {
   taken: boolean;
   takenTime?: string; // HH:MM
   alertSent: boolean;
+  pillType: PillType;
   observations?: ObservationType[];
 }
 

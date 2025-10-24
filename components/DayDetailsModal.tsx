@@ -15,10 +15,11 @@ import {
   OBSERVATION_EMOJIS,
   OBSERVATION_LABELS,
 } from "@/constants/observations";
+import { PILL_TYPE_EMOJIS, PILL_TYPE_LABELS } from "@/constants/pillTypes";
 import { Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { FirestoreService } from "@/src/services/firestoreService";
-import { DailyLog, ObservationType } from "@/src/types";
+import { DailyLog, ObservationType, PillType } from "@/src/types";
 import { formatDateForDisplay, isPastDate } from "@/src/utils/dateUtils";
 
 interface DayDetailsModalProps {
@@ -46,6 +47,7 @@ export function DayDetailsModal({
   const [tempObservations, setTempObservations] = useState<ObservationType[]>(
     []
   );
+  const [selectedPillType, setSelectedPillType] = useState<PillType>("active");
 
   const handleEditObservations = () => {
     setIsEditing(true);
@@ -92,14 +94,33 @@ export function DayDetailsModal({
   };
 
   const handleRegisterPill = () => {
+    Alert.alert("Registrar Pílula", "Selecione o tipo de pílula:", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: PILL_TYPE_LABELS.active + PILL_TYPE_EMOJIS.active,
+        onPress: () => {
+          setSelectedPillType("active");
+          handlePillTypeSelection();
+        },
+      },
+      {
+        text: PILL_TYPE_LABELS.placebo + PILL_TYPE_EMOJIS.placebo,
+        onPress: () => {
+          setSelectedPillType("placebo");
+          handlePillTypeSelection();
+        },
+      },
+    ]);
+  };
+
+  const handlePillTypeSelection = () => {
     Alert.alert(
-      "Registrar Pílula",
+      "Adicionar Observações",
       "Deseja adicionar observações para este dia?",
       [
-        { text: "Cancelar", style: "cancel" },
         {
           text: "Não",
-          onPress: () => handleConfirmRegister([]),
+          onPress: () => handleConfirmRegister([], selectedPillType),
         },
         {
           text: "Sim",
@@ -112,7 +133,10 @@ export function DayDetailsModal({
     );
   };
 
-  const handleConfirmRegister = async (observations: ObservationType[]) => {
+  const handleConfirmRegister = async (
+    observations: ObservationType[],
+    pillType: PillType = "active"
+  ) => {
     if (!dateKey) {
       throw new Error("Data não encontrada");
     }
@@ -125,6 +149,7 @@ export function DayDetailsModal({
         taken: true,
         takenTime: "20:00",
         alertSent: true,
+        pillType: pillType,
         ...(observations.length > 0 && { observations }),
       };
 
@@ -145,7 +170,7 @@ export function DayDetailsModal({
 
   const handleSaveObservationsAndRegister = () => {
     setShowObservationsDialog(false);
-    handleConfirmRegister(tempObservations);
+    handleConfirmRegister(tempObservations, selectedPillType);
   };
 
   const handleCancelObservationsDialog = () => {
@@ -275,6 +300,14 @@ export function DayDetailsModal({
               >
                 {dailyLog?.taken ? "✅ Pílula Tomada" : "❌ Pílula Não Tomada"}
               </Text>
+              {dailyLog?.taken && dailyLog?.pillType && (
+                <Text
+                  style={[styles.pillTypeText, { color: colors.textSecondary }]}
+                >
+                  {PILL_TYPE_EMOJIS[dailyLog.pillType]}{" "}
+                  {PILL_TYPE_LABELS[dailyLog.pillType]}
+                </Text>
+              )}
               {dailyLog?.takenTime && (
                 <Text
                   style={[styles.timeText, { color: colors.textSecondary }]}
@@ -497,6 +530,11 @@ const styles = StyleSheet.create({
     ...Typography.body,
     marginTop: 4,
     opacity: 0.7,
+  },
+  pillTypeText: {
+    ...Typography.caption,
+    marginTop: 4,
+    fontWeight: "600",
   },
   observationsHeader: {
     flexDirection: "row",

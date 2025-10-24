@@ -113,6 +113,7 @@ export class FirestoreService {
           taken: data.taken,
           takenTime: data.takenTime,
           alertSent: data.alertSent,
+          pillType: data.pillType,
           observations: data.observations,
         };
       }
@@ -139,6 +140,7 @@ export class FirestoreService {
           taken: data.taken,
           takenTime: data.takenTime,
           alertSent: data.alertSent,
+          pillType: data.pillType,
         });
       } else {
         callback(null);

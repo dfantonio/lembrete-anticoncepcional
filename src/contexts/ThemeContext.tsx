@@ -1,6 +1,6 @@
 import { getColors } from "@/constants/theme";
+import { StorageService } from "@/src/services/storageService";
 import { Theme, ThemeMode } from "@/src/types";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 
@@ -12,8 +12,6 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-const THEME_STORAGE_KEY = "@theme_mode";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
@@ -44,13 +42,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const loadThemePreference = async () => {
     try {
-      const savedThemeMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-      if (
-        savedThemeMode &&
-        ["light", "dark", "system"].includes(savedThemeMode)
-      ) {
-        setThemeModeState(savedThemeMode as ThemeMode);
-      }
+      const savedThemeMode = await StorageService.getThemeMode();
+      setThemeModeState(savedThemeMode);
     } catch (error) {
       console.error("❌ Erro ao carregar preferência de tema:", error);
     } finally {
@@ -61,7 +54,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setThemeMode = async (mode: ThemeMode) => {
     try {
       setThemeModeState(mode);
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+      await StorageService.setThemeMode(mode);
     } catch (error) {
       console.error("❌ Erro ao salvar preferência de tema:", error);
     }

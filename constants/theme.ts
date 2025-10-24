@@ -16,6 +16,7 @@ export const LightColors = {
   textSecondary: "#666666", // Cinza Médio (Texto Secundário)
   success: "#4CAF50", // Verde Menta (Sucesso)
   alert: "#C67171", // Malva Escuro (Alerta)
+  placebo: "#FDD835", // Amarelo suave discreto (Placebo)
   border: "#E0E0E0", // Cinza Claro (Bordas)
   white: "#FFFFFF", // Branco Puro
 };
@@ -30,6 +31,7 @@ export const DarkColors = {
   textSecondary: "#B0B0B0", // Texto Secundário
   success: "#66BB6A", // Verde Menta Mais Vibrante
   alert: "#E57373", // Malva Mais Vibrante
+  placebo: "#F9A825", // Amarelo escuro (Placebo)
   border: "#404040", // Bordas Sutis
   white: "#FFFFFF", // Branco Puro (para ícones)
 };
