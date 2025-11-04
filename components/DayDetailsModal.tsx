@@ -100,27 +100,27 @@ export function DayDetailsModal({
         text: PILL_TYPE_LABELS.active + PILL_TYPE_EMOJIS.active,
         onPress: () => {
           setSelectedPillType("active");
-          handlePillTypeSelection();
+          handlePillTypeSelection("active");
         },
       },
       {
         text: PILL_TYPE_LABELS.placebo + PILL_TYPE_EMOJIS.placebo,
         onPress: () => {
           setSelectedPillType("placebo");
-          handlePillTypeSelection();
+          handlePillTypeSelection("placebo");
         },
       },
     ]);
   };
 
-  const handlePillTypeSelection = () => {
+  const handlePillTypeSelection = (pillType: PillType) => {
     Alert.alert(
       "Adicionar Observações",
       "Deseja adicionar observações para este dia?",
       [
         {
           text: "Não",
-          onPress: () => handleConfirmRegister([], selectedPillType),
+          onPress: () => handleConfirmRegister([], pillType),
         },
         {
           text: "Sim",
