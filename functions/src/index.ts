@@ -66,9 +66,17 @@ export const testPillReminder = onRequest(async (req, res) => {
  * Lógica principal compartilhada entre as funções agendada e de teste
  */
 async function checkAndSendPillReminder() {
-  // 1. Obter data atual (YYYY-MM-DD)
-  const today = format(new Date(), "yyyy-MM-dd");
-  logger.info(`📅 Verificando data: ${today}`);
+  const today = format(
+    new Date(
+      new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+    ),
+    "yyyy-MM-dd"
+  );
+  logger.info(
+    `📅 Verificando data: ${today}`,
+    new Date(),
+    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+  );
 
   // 2. Buscar daily_log do dia
   const dailyLogRef = admin
@@ -80,14 +88,24 @@ async function checkAndSendPillReminder() {
     .collection("daily_log")
     .doc(today);
 
-  const dailyLogDoc = await dailyLogRef.get();
+  let dailyLogDoc = await dailyLogRef.get();
 
   if (!dailyLogDoc.exists) {
-    logger.info("❌ Documento daily_log não encontrado para hoje");
-    return {
-      action: "no_document",
-      message: "Documento daily_log não encontrado para hoje",
-    };
+    logger.info(
+      "📝 Documento daily_log não encontrado. Criando automaticamente..."
+    );
+
+    // Criar documento com estado inicial
+    await dailyLogRef.set({
+      dateKey: today,
+      taken: false,
+      alertSent: false,
+    });
+
+    logger.info("✅ Documento daily_log criado automaticamente");
+
+    // Buscar o documento novamente após criação
+    dailyLogDoc = await dailyLogRef.get();
   }
 
   const dailyLog = dailyLogDoc.data();
