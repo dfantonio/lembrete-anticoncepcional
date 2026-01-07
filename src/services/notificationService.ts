@@ -104,13 +104,13 @@ export class NotificationService {
   /**
    * Cancela apenas a notificação de hoje
    */
-  static async cancelTodayNotification(): Promise<void> {
+  static async cancelTodayNotification(dateKey?: string): Promise<void> {
     try {
-      const today = formatDateKey();
-      const notificationId = `pill-reminder-${today}`;
+      const targetDateKey = dateKey || formatDateKey();
+      const notificationId = `pill-reminder-${targetDateKey}`;
 
       await Notifications.cancelScheduledNotificationAsync(notificationId);
-      console.log(`✅ Notificação de hoje (${today}) cancelada`);
+      console.log(`✅ Notificação cancelada (${targetDateKey})`);
     } catch (error) {
       console.error("❌ Erro ao cancelar notificação de hoje:", error);
       throw error;

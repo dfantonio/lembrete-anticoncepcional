@@ -11,6 +11,27 @@ export const formatDateKey = (date?: Date): string => {
 };
 
 /**
+ * Retorna o "dia da pílula" (YYYY-MM-DD) com virada às 03:00.
+ * Regra: se a hora local for < cutoffHour (padrão 3), considera o dia anterior.
+ *
+ * Ex.: 00:30 de 2026-01-07 -> retorna 2026-01-06
+ */
+export const getPillDateKey = (date?: Date, cutoffHour: number = 3): string => {
+  const targetDate = date || new Date();
+
+  // Proteção para valores inválidos
+  const safeCutoff = Number.isFinite(cutoffHour) ? cutoffHour : 3;
+
+  if (targetDate.getHours() < safeCutoff) {
+    const adjusted = new Date(targetDate);
+    adjusted.setDate(adjusted.getDate() - 1);
+    return format(adjusted, "yyyy-MM-dd");
+  }
+
+  return format(targetDate, "yyyy-MM-dd");
+};
+
+/**
  * Formata uma data para o formato HH:MM.
  * Se nenhuma data for fornecida, usa a hora atual
  */

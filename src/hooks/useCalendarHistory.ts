@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog } from "@/src/types";
-import { formatDateKey } from "@/src/utils/dateUtils";
+import { getPillDateKey } from "@/src/utils/dateUtils";
 
 type VisibleMonth = { year: number; month: number }; // month: 1-12
 
@@ -190,7 +190,7 @@ export function useCalendarHistory(options: {
       visibleMonth.year,
       visibleMonth.month
     );
-    const todayKey = formatDateKey();
+    const todayKey = getPillDateKey();
 
     for (let day = 1; day <= lastDay; day++) {
       const dateKey = `${monthKey}-${pad2(day)}`;

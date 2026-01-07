@@ -11,7 +11,7 @@ import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
 import { DailyLog } from "@/src/types";
-import { formatDateKey } from "@/src/utils/dateUtils";
+import { getPillDateKey } from "@/src/utils/dateUtils";
 
 export default function MainBFScreen() {
   const { colors } = useAppTheme();
@@ -39,7 +39,7 @@ export default function MainBFScreen() {
       }
 
       // Observar mudanças no log diário
-      const today = formatDateKey(); // YYYY-MM-DD
+      const today = getPillDateKey(); // YYYY-MM-DD com virada às 03:00
       const unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
         setDailyLog(log);
       });

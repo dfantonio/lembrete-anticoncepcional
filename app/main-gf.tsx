@@ -14,7 +14,7 @@ import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
 import { StorageService } from "@/src/services/storageService";
 import { DailyLog, ObservationType, PillType, ScreenName } from "@/src/types";
-import { formatDateKey, formatTimeString } from "@/src/utils/dateUtils";
+import { formatTimeString, getPillDateKey } from "@/src/utils/dateUtils";
 
 export default function MainGFScreen() {
   const { colors } = useAppTheme();
@@ -44,7 +44,7 @@ export default function MainGFScreen() {
       await NotificationService.scheduleWeeklyNotifications();
 
       // Observar mudanças no log diário
-      const today = formatDateKey(); // YYYY-MM-DD no timezone local
+      const today = getPillDateKey(); // YYYY-MM-DD com virada às 03:00
       const unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
         setDailyLog(log);
       });
@@ -69,7 +69,8 @@ export default function MainGFScreen() {
       }
 
       const now = new Date();
-      const dateKey = formatDateKey(now); // YYYY-MM-DD no timezone local
+      const dateKey = getPillDateKey(now); // YYYY-MM-DD com virada às 03:00
+      console.log("dateKey", dateKey);
       const timeString = formatTimeString(now); // HH:MM no timezone local
 
       const newLog: DailyLog = {
@@ -88,7 +89,9 @@ export default function MainGFScreen() {
       await StorageService.setLastPillType(selectedPillType);
 
       // Cancelar notificação de hoje (já foi tomada)
-      await NotificationService.cancelTodayNotification();
+      // Usa o mesmo dateKey salvo para não cancelar o lembrete do "dia novo"
+      // quando estiver registrando o dia anterior de madrugada.
+      await NotificationService.cancelTodayNotification(dateKey);
 
       Alert.alert("Pílula Registrada! ✅", `Tomada às ${timeString}`, [
         { text: "OK" },
