@@ -5,6 +5,7 @@ import { onRequest } from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
 import { setGlobalOptions } from "firebase-functions/options";
 import { onSchedule } from "firebase-functions/scheduler";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -13,6 +14,135 @@ setGlobalOptions({ maxInstances: 1 });
 
 // Constants
 const APP_ID = "lembrete-anticoncepcional";
+
+/**
+ * Envia push notifications via Expo para todos os usuários BF (role: BF_REMINDER).
+ */
+async function sendPushToAllBfUsers(payload: {
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+}) {
+  const usersRef = admin
+    .firestore()
+    .collection("artifacts")
+    .doc(APP_ID)
+    .collection("public")
+    .doc("data")
+    .collection("users_config");
+
+  const bfQuery = await usersRef.where("role", "==", "BF_REMINDER").get();
+  if (bfQuery.empty) {
+    logger.warn("⚠️ Usuário BF não encontrado");
+    return { attempted: 0, sent: 0 };
+  }
+
+  const bfUsers = bfQuery.docs.map((doc) => ({ id: doc.id, data: doc.data() }));
+  logger.info(`👤 ${bfUsers.length} usuário(s) BF encontrado(s)`, {
+    bfUsers: bfUsers.map((u) => ({ id: u.id, hasToken: !!u.data.pushToken })),
+  });
+
+  const notifications = bfUsers
+    .filter((u) => !!u.data.pushToken)
+    .map((u) => ({
+      to: u.data.pushToken,
+      title: payload.title,
+      body: payload.body,
+      sound: "default",
+      priority: "high",
+      data: payload.data || {},
+    }));
+
+  if (notifications.length === 0) {
+    logger.warn("⚠️ Nenhum usuário BF com pushToken configurado");
+    return { attempted: 0, sent: 0 };
+  }
+
+  let sent = 0;
+  for (const notification of notifications) {
+    try {
+      await axios.post("https://exp.host/--/api/v2/push/send", notification, {
+        headers: {
+          Accept: "application/json",
+          "Accept-encoding": "gzip, deflate",
+          "Content-Type": "application/json",
+        },
+      });
+      sent++;
+    } catch (error) {
+      logger.error("❌ Erro ao enviar notificação para BF:", error);
+      // Continua tentando para os demais
+    }
+  }
+
+  logger.info(`✅ Push enviado para BF: ${sent}/${notifications.length}`);
+  return { attempted: notifications.length, sent };
+}
+
+/**
+ * Trigger: quando a pílula é registrada (taken muda para true), notifica o BF.
+ * Garante 1x por dia via flag `takenNotified`.
+ */
+export const notifyBfOnPillTaken = onDocumentWritten(
+  `artifacts/${APP_ID}/public/data/daily_log/{dateKey}`,
+  async (event) => {
+    const change = event.data;
+    if (!change) {
+      return;
+    }
+
+    const afterSnap = change.after;
+    if (!afterSnap.exists) {
+      return;
+    }
+
+    const after = afterSnap.data() as any;
+    const before = change.before.exists ? (change.before.data() as any) : null;
+
+    const wasTaken = before?.taken === true;
+    const isTaken = after?.taken === true;
+
+    if (!isTaken || wasTaken) {
+      return;
+    }
+
+    // Dedupe (reprocessamentos / atualizações posteriores)
+    if (after?.takenNotified === true) {
+      logger.info(
+        "⏭️ Notificação de 'pílula registrada' já enviada (takenNotified=true)"
+      );
+      return;
+    }
+
+    const dateKey = after?.dateKey || (event.params as any)?.dateKey;
+    const takenTime = after?.takenTime;
+    const body = takenTime
+      ? `Registrada às ${takenTime} (dia ${dateKey})`
+      : `Registrada (dia ${dateKey})`;
+
+    logger.info("✅ Pílula registrada, enviando push para BF", {
+      dateKey,
+      takenTime,
+    });
+
+    const result = await sendPushToAllBfUsers({
+      title: "✅ Pílula registrada",
+      body,
+      data: { type: "pill_taken", date: dateKey },
+    });
+
+    // Marcar flag de dedupe mesmo se envio falhar parcialmente (evita spam)
+    try {
+      await afterSnap.ref.update({
+        takenNotified: true,
+        takenNotifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+        takenNotifiedResult: result,
+      });
+    } catch (error) {
+      logger.error("❌ Erro ao atualizar takenNotified no daily_log:", error);
+    }
+  }
+);
 
 /**
  * Função agendada que executa diariamente às 22:00 (horário de Brasília)
@@ -115,93 +245,11 @@ async function checkAndSendPillReminder() {
   if (dailyLog?.taken === false && dailyLog?.alertSent === false) {
     logger.info("🚨 Pílula não tomada! Enviando alerta para BF...");
 
-    // 4. Buscar usuário BF (role: "BF_REMINDER")
-    const usersRef = admin
-      .firestore()
-      .collection("artifacts")
-      .doc(APP_ID)
-      .collection("public")
-      .doc("data")
-      .collection("users_config");
-
-    const bfQuery = await usersRef.where("role", "==", "BF_REMINDER").get();
-
-    if (bfQuery.empty) {
-      logger.error("❌ Usuário BF não encontrado");
-      throw new Error("Usuário BF não encontrado");
-    }
-
-    const bfUsers = bfQuery.docs.map((doc) => ({
-      id: doc.id,
-      data: doc.data(),
-    }));
-    logger.info(`👤 ${bfUsers.length} usuário(s) BF encontrado(s):`, bfUsers);
-
-    // 5. Enviar notificação para todos os usuários BF
-    const notifications = [];
-    const validUsers = [];
-
-    for (const bfUser of bfUsers) {
-      if (!bfUser.data.pushToken) {
-        logger.warn(
-          `⚠️ Usuário BF ${bfUser.id} não tem push token configurado`
-        );
-        continue;
-      }
-
-      const notification = {
-        to: bfUser.data.pushToken,
-        title: "🚨 ALERTA: Pílula não tomada!",
-        body: `A pílula anticoncepcional não foi confirmada hoje. Verifique com a Sasa!`,
-        sound: "default",
-        priority: "high",
-        data: {
-          date: today,
-          type: "pill_reminder",
-        },
-      };
-
-      notifications.push(notification);
-      validUsers.push({
-        userId: bfUser.id,
-        platform: bfUser.data.platform,
-      });
-    }
-
-    if (notifications.length === 0) {
-      logger.error("❌ Nenhum usuário BF válido com push token encontrado");
-      throw new Error("Nenhum usuário BF válido com push token encontrado");
-    }
-
-    // Enviar todas as notificações
-    const responses = [];
-    for (const notification of notifications) {
-      try {
-        const response = await axios.post(
-          "https://exp.host/--/api/v2/push/send",
-          notification,
-          {
-            headers: {
-              Accept: "application/json",
-              "Accept-encoding": "gzip, deflate",
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        responses.push(response.data);
-        logger.info("✅ Notificação enviada para um usuário BF");
-      } catch (error) {
-        logger.error(
-          "❌ Erro ao enviar notificação para um usuário BF:",
-          error
-        );
-        // Continue enviando para outros usuários mesmo se um falhar
-      }
-    }
-
-    logger.info(
-      `✅ ${responses.length} notificação(ões) enviada(s) com sucesso`
-    );
+    const sendResult = await sendPushToAllBfUsers({
+      title: "🚨 ALERTA: Pílula não tomada!",
+      body: `A pílula anticoncepcional não foi confirmada hoje. Verifique com a Sasa!`,
+      data: { date: today, type: "pill_reminder" },
+    });
 
     // 6. Marcar alertSent como true
     await dailyLogRef.update({
@@ -213,9 +261,8 @@ async function checkAndSendPillReminder() {
 
     return {
       action: "notification_sent",
-      message: `${responses.length} notificação(ões) enviada(s) com sucesso`,
-      notifications: responses,
-      bfUsers: validUsers,
+      message: `${sendResult.sent} notificação(ões) enviada(s) com sucesso`,
+      sendResult,
     };
   } else {
     const reason = dailyLog?.taken
