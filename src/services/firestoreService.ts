@@ -153,23 +153,56 @@ export class FirestoreService {
    */
   static async getRecentLogs(days: number = 30): Promise<DailyLog[]> {
     try {
-      const logs: DailyLog[] = [];
       const today = new Date();
+      const endDateKey = today.toISOString().split("T")[0]; // YYYY-MM-DD
 
-      for (let i = 0; i < days; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - Math.max(0, days - 1));
+      const startDateKey = startDate.toISOString().split("T")[0]; // YYYY-MM-DD
 
-        const log = await this.getDailyLog(dateKey);
-        if (log) {
-          logs.push(log);
-        }
-      }
+      const logs = await this.getLogsByDateRange(startDateKey, endDateKey);
 
-      return logs;
+      // Manter compatibilidade: mais recente primeiro
+      return [...logs].sort((a, b) => b.dateKey.localeCompare(a.dateKey));
     } catch (error) {
       console.error("❌ Erro ao obter logs recentes:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtém logs em um intervalo de datas (inclusive).
+   * Observação: como `dateKey` é string no formato YYYY-MM-DD, a comparação lexicográfica funciona.
+   */
+  static async getLogsByDateRange(
+    startDateKey: string,
+    endDateKey: string
+  ): Promise<DailyLog[]> {
+    try {
+      const logsRef = collection(db, COLLECTIONS.DAILY_LOG);
+      const q = query(
+        logsRef,
+        where("dateKey", ">=", startDateKey),
+        where("dateKey", "<=", endDateKey)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const logs: DailyLog[] = querySnapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          dateKey: data.dateKey,
+          taken: data.taken,
+          takenTime: data.takenTime,
+          alertSent: data.alertSent,
+          pillType: data.pillType,
+          observations: data.observations,
+        } as DailyLog;
+      });
+
+      // Ordem previsível (mais antigo -> mais recente); quem chamar pode reordenar se quiser
+      return logs.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    } catch (error) {
+      console.error("❌ Erro ao obter logs por intervalo de datas:", error);
       throw error;
     }
   }
