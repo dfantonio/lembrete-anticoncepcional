@@ -96,8 +96,8 @@ export const notifyBfOnPillTaken = onDocumentWritten(
       return;
     }
 
-    const after = afterSnap.data() as any;
-    const before = change.before.exists ? (change.before.data() as any) : null;
+    const after = afterSnap.data();
+    const before = change.before.exists ? change.before.data() : null;
 
     const wasTaken = before?.taken === true;
     const isTaken = after?.taken === true;
@@ -114,7 +114,7 @@ export const notifyBfOnPillTaken = onDocumentWritten(
       return;
     }
 
-    const dateKey = after?.dateKey || (event.params as any)?.dateKey;
+    const dateKey = after?.dateKey || event.params?.dateKey;
     const takenTime = after?.takenTime;
     const body = takenTime
       ? `Registrada às ${takenTime} (dia ${dateKey})`
