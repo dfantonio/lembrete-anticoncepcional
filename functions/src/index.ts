@@ -116,9 +116,6 @@ export const notifyBfOnPillTaken = onDocumentWritten(
 
     const dateKey = after?.dateKey || event.params?.dateKey;
     const takenTime = after?.takenTime;
-    const body = takenTime
-      ? `Registrada às ${takenTime} (dia ${dateKey})`
-      : `Registrada (dia ${dateKey})`;
 
     logger.info("✅ Pílula registrada, enviando push para BF", {
       dateKey,
@@ -127,7 +124,7 @@ export const notifyBfOnPillTaken = onDocumentWritten(
 
     const result = await sendPushToAllBfUsers({
       title: "✅ Pílula registrada",
-      body,
+      body: "",
       data: { type: "pill_taken", date: dateKey },
     });
 
