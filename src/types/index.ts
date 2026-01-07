@@ -16,6 +16,7 @@ export type ObservationType =
   | "dor_costas"
   | "dor_pernas"
   | "espinha"
+  | "treino"
   | "sexo_protegido"
   | "sexo_sem_protecao";
 

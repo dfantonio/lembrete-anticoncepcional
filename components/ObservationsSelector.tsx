@@ -29,6 +29,7 @@ export function ObservationsSelector({
     "dor_pernas",
     "dor_cabeca",
     "espinha",
+    "treino",
     "sexo_protegido",
     "sexo_sem_protecao",
   ];

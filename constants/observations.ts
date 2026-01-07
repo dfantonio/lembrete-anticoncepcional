@@ -9,6 +9,7 @@ export const OBSERVATION_LABELS: Record<ObservationType, string> = {
   dor_pernas: "Dor nas Pernas",
   dor_cabeca: "Dor de Cabeça",
   espinha: "Espinha",
+  treino: "Treino",
   sexo_protegido: "Protegido",
   sexo_sem_protecao: "Sem Proteção",
 };
@@ -22,6 +23,7 @@ export const OBSERVATION_EMOJIS: Record<ObservationType, string> = {
   dor_pernas: "🦵",
   dor_cabeca: "🤯",
   espinha: "🔴",
+  treino: "🏋️‍♀️",
   sexo_protegido: "🛡️",
   sexo_sem_protecao: "🍆💦",
 };
