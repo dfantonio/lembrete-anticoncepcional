@@ -115,6 +115,10 @@ export default function MainGFScreen() {
     router.push(`/${ScreenName.CalendarHistory}`);
   };
 
+  const navigateToAnalytics = () => {
+    router.push(`/${ScreenName.Analytics}`);
+  };
+
   const handleToggleObservation = (observation: ObservationType) => {
     setSelectedObservations((prev) =>
       prev.includes(observation)
@@ -175,6 +179,11 @@ export default function MainGFScreen() {
               title="Ver Histórico"
               onPress={navigateToHistory}
               style={styles.historyButton}
+            />
+            <Button
+              title="Ver Análises"
+              onPress={navigateToAnalytics}
+              style={styles.analyticsButton}
             />
           </View>
 
@@ -247,8 +256,12 @@ const styles = StyleSheet.create({
   },
   historySection: {
     marginBottom: 32,
+    gap: 12,
   },
   historyButton: {
+    backgroundColor: "#333333", // Keep as fallback
+  },
+  analyticsButton: {
     backgroundColor: "#333333", // Keep as fallback
   },
   infoSection: {

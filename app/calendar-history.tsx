@@ -34,7 +34,7 @@ export default function CalendarHistoryScreen() {
     null
   );
 
-  const handleDayPress = async (day: any) => {
+  const handleDayPress = async (day: { dateString: string }) => {
     const dateKey = day.dateString;
     setSelectedDate(dateKey);
 

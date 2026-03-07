@@ -54,6 +54,10 @@ export default function MainBFScreen() {
     router.push("/calendar-history");
   };
 
+  const navigateToAnalytics = () => {
+    router.push("/analytics");
+  };
+
   const getStatusMessage = () => {
     if (!dailyLog) {
       return "Aguardando informações...";
@@ -116,6 +120,11 @@ export default function MainBFScreen() {
             title="Ver Histórico"
             onPress={navigateToHistory}
             style={styles.historyButton}
+          />
+          <Button
+            title="Ver Análises"
+            onPress={navigateToAnalytics}
+            style={styles.analyticsButton}
           />
         </View>
 
@@ -184,8 +193,13 @@ const styles = StyleSheet.create({
   },
   historySection: {
     marginBottom: 32,
+    gap: 12,
   },
   historyButton: {
+    minHeight: 50,
+    backgroundColor: "#333333", // Keep as fallback
+  },
+  analyticsButton: {
     minHeight: 50,
     backgroundColor: "#333333", // Keep as fallback
   },

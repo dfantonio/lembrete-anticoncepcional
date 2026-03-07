@@ -51,6 +51,7 @@ export enum ScreenName {
   MainGF = "main-gf",
   MainBF = "main-bf",
   CalendarHistory = "calendar-history",
+  Analytics = "analytics",
 }
 
 export interface AppState {

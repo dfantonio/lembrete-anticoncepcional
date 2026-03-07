@@ -32,6 +32,7 @@ function AppContent() {
           <Stack.Screen name={ScreenName.MainGF} />
           <Stack.Screen name={ScreenName.MainBF} />
           <Stack.Screen name={ScreenName.CalendarHistory} />
+          <Stack.Screen name={ScreenName.Analytics} />
         </Stack>
         <StatusBar
           style={theme === "dark" ? "light" : "dark"}
