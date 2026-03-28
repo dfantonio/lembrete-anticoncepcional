@@ -8,7 +8,10 @@
     "ios": "expo start --ios --port 3001",
     "web": "expo start --web",
     "lint": "expo lint",
-    "release-expo": "eas update"
+    "release-expo": "eas update --auto --branch master",
+    "build:android": "eas build --profile preview --platform android",
+    "build:ios": "eas build --profile preview --platform ios",
+    "build:all": "eas build --profile preview --platform android --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
