@@ -1,6 +1,7 @@
 import { eachDayOfInterval, format, parseISO } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 
+import { OBSERVATION_EMOJIS } from "@/constants/observations";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { DailyLog, ObservationType } from "@/src/types";
 import { getPillDateKey } from "@/src/utils/dateUtils";
@@ -132,6 +133,8 @@ export function useAnalytics(
     for (const log of logs) {
       if (!log.taken || !log.observations) continue;
       for (const obs of log.observations) {
+        // Ignora valores legados/inválidos que não existem nos mapas de observação
+        if (!(obs in OBSERVATION_EMOJIS)) continue;
         obsMap.set(obs, (obsMap.get(obs) ?? 0) + 1);
       }
     }

@@ -157,16 +157,19 @@ export default function AnalyticsScreen() {
   const chartWidth = screenWidth - 80;
 
   const chartData = useMemo(() => {
-    return observationCounts.map((obs) => ({
-      value: obs.count,
-      label: Array.from(OBSERVATION_EMOJIS[obs.type as ObservationType])[0],
-      frontColor: colors.action,
-      topLabelComponent: () => (
-        <Text style={{ color: colors.textSecondary, fontSize: 11, marginBottom: 2 }}>
-          {obs.count}
-        </Text>
-      ),
-    }));
+    return observationCounts.map((obs) => {
+      const emoji = OBSERVATION_EMOJIS[obs.type as ObservationType];
+      return {
+        value: obs.count,
+        label: emoji ? Array.from(emoji)[0] : "•",
+        frontColor: colors.action,
+        topLabelComponent: () => (
+          <Text style={{ color: colors.textSecondary, fontSize: 11, marginBottom: 2 }}>
+            {obs.count}
+          </Text>
+        ),
+      };
+    });
   }, [observationCounts, colors]);
 
   const hasTaken = takenCount > 0;
