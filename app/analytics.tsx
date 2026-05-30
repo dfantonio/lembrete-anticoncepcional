@@ -17,11 +17,10 @@ import { MarkedDates } from "react-native-calendars/src/types";
 import { BarChart } from "react-native-gifted-charts";
 
 import { AppHeader } from "@/components/AppHeader";
-import { OBSERVATION_EMOJIS, OBSERVATION_LABELS } from "@/constants/observations";
+import { getObservationField } from "@/constants/observations";
 import { getColors, Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { useAnalytics } from "@/src/hooks/useAnalytics";
-import { ObservationType } from "@/src/types";
 import { formatDateKey, getPillDateKey } from "@/src/utils/dateUtils";
 
 type PeriodPreset = "1M" | "3M" | "6M" | "1A";
@@ -147,6 +146,7 @@ export default function AnalyticsScreen() {
     currentStreak,
     maxStreak,
     observationCounts,
+    scaleDistributions,
     averageTakenTime,
     timeDistribution,
     pillTypeCounts,
@@ -158,7 +158,7 @@ export default function AnalyticsScreen() {
 
   const chartData = useMemo(() => {
     return observationCounts.map((obs) => {
-      const emoji = OBSERVATION_EMOJIS[obs.type as ObservationType];
+      const emoji = getObservationField(obs.type)?.emoji;
       return {
         value: obs.count,
         label: emoji ? Array.from(emoji)[0] : "•",
@@ -408,20 +408,59 @@ export default function AnalyticsScreen() {
 
               {/* Legend */}
               <View style={styles.legendContainer}>
-                {observationCounts.map((obs) => (
-                  <View key={obs.type} style={styles.legendItem}>
-                    <Text style={styles.legendEmoji}>
-                      {OBSERVATION_EMOJIS[obs.type as ObservationType]}
-                    </Text>
-                    <Text style={[styles.legendText, { color: colors.text }]}>
-                      {OBSERVATION_LABELS[obs.type as ObservationType]} —{" "}
-                      {obs.count}x
-                    </Text>
-                  </View>
-                ))}
+                {observationCounts.map((obs) => {
+                  const field = getObservationField(obs.type);
+                  return (
+                    <View key={obs.type} style={styles.legendItem}>
+                      <Text style={styles.legendEmoji}>{field?.emoji}</Text>
+                      <Text style={[styles.legendText, { color: colors.text }]}>
+                        {field?.label ?? obs.type} — {obs.count}x
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             </View>
           )}
+
+          {/* Scale distributions (ex.: estresse) */}
+          {scaleDistributions
+            .filter((dist) => dist.total > 0)
+            .map((dist) => (
+              <View key={dist.id} style={cardStyle}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>
+                  {dist.emoji} {dist.label}
+                </Text>
+                <Text
+                  style={[styles.cardSubtitle, { color: colors.textSecondary }]}
+                >
+                  {dist.average != null
+                    ? `Média: ${dist.average.toFixed(1)} de ${
+                        dist.levels.length
+                      }`
+                    : "Sem dados"}
+                </Text>
+
+                <View style={styles.legendContainer}>
+                  {dist.levels.map((level) => {
+                    const pct =
+                      dist.total > 0
+                        ? Math.round((level.count / dist.total) * 100)
+                        : 0;
+                    return (
+                      <View key={level.value} style={styles.legendItem}>
+                        <Text style={styles.legendEmoji}>{level.emoji}</Text>
+                        <Text
+                          style={[styles.legendText, { color: colors.text }]}
+                        >
+                          {level.label} — {level.count}x ({pct}%)
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
 
           {/* Average time card */}
           {hasTaken && averageTakenTime && (

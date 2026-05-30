@@ -5,25 +5,37 @@ import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
 import { ObservationsSelector } from "@/components/ObservationsSelector";
+import { RequiredObservationsModal } from "@/components/RequiredObservationsModal";
 import { SplitButton } from "@/components/SplitButton";
 import { StatusCard } from "@/components/StatusCard";
+import { REQUIRED_FIELDS } from "@/constants/observations";
 import { Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
 import { StorageService } from "@/src/services/storageService";
-import { DailyLog, ObservationType, PillType, ScreenName } from "@/src/types";
+import {
+  DailyLog,
+  ObservationType,
+  ObservationValue,
+  PillType,
+  ScreenName,
+} from "@/src/types";
 import { formatTimeString, getPillDateKey } from "@/src/utils/dateUtils";
+
+type ObservationMap = Partial<Record<ObservationType, ObservationValue>>;
 
 export default function MainGFScreen() {
   const { colors } = useAppTheme();
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedObservations, setSelectedObservations] = useState<
-    ObservationType[]
-  >([]);
+  const [observations, setObservations] = useState<ObservationMap>({});
   const [selectedPillType, setSelectedPillType] = useState<PillType>("active");
+  // Campos obrigatórios faltantes que disparam o modal antes de salvar
+  const [missingRequired, setMissingRequired] = useState<
+    typeof REQUIRED_FIELDS | null
+  >(null);
 
   const initializeScreen = useCallback(async () => {
     try {
@@ -59,7 +71,7 @@ export default function MainGFScreen() {
     initializeScreen();
   }, [initializeScreen]);
 
-  const handlePillTaken = async () => {
+  const saveLog = async (obs: ObservationMap) => {
     try {
       setIsLoading(true);
 
@@ -79,7 +91,7 @@ export default function MainGFScreen() {
         takenTime: timeString,
         alertSent: false,
         pillType: selectedPillType,
-        observations: selectedObservations,
+        observations: obs,
       };
 
       // Salvar no Firestore
@@ -98,7 +110,7 @@ export default function MainGFScreen() {
       ]);
 
       // Limpar observações selecionadas após salvar
-      setSelectedObservations([]);
+      setObservations({});
     } catch (error) {
       console.error("❌ Erro ao registrar pílula:", error);
       Alert.alert(
@@ -111,6 +123,28 @@ export default function MainGFScreen() {
     }
   };
 
+  const handlePillTaken = async () => {
+    // Verifica campos obrigatórios que ainda não foram preenchidos
+    const missing = REQUIRED_FIELDS.filter(
+      (field) => observations[field.id] == null
+    );
+
+    if (missing.length > 0) {
+      // Abre o modal para forçar o preenchimento antes de salvar
+      setMissingRequired(missing);
+      return;
+    }
+
+    await saveLog(observations);
+  };
+
+  const handleRequiredComplete = async (values: ObservationMap) => {
+    setMissingRequired(null);
+    const merged = { ...observations, ...values };
+    setObservations(merged);
+    await saveLog(merged);
+  };
+
   const navigateToHistory = () => {
     router.push(`/${ScreenName.CalendarHistory}`);
   };
@@ -119,12 +153,16 @@ export default function MainGFScreen() {
     router.push(`/${ScreenName.Analytics}`);
   };
 
-  const handleToggleObservation = (observation: ObservationType) => {
-    setSelectedObservations((prev) =>
-      prev.includes(observation)
-        ? prev.filter((obs) => obs !== observation)
-        : [...prev, observation]
-    );
+  const handleSetObservation = (
+    id: ObservationType,
+    value: ObservationValue | undefined
+  ) => {
+    setObservations((prev) => {
+      const next = { ...prev };
+      if (value === undefined) delete next[id];
+      else next[id] = value;
+      return next;
+    });
   };
 
   const handlePillTypeChange = (pillType: PillType) => {
@@ -152,8 +190,8 @@ export default function MainGFScreen() {
           {!dailyLog?.taken && (
             <View style={styles.observationsSection}>
               <ObservationsSelector
-                selectedObservations={selectedObservations}
-                onToggleObservation={handleToggleObservation}
+                value={observations}
+                onChange={handleSetObservation}
               />
             </View>
           )}
@@ -199,6 +237,15 @@ export default function MainGFScreen() {
           </View>
         </View>
       </View>
+
+      <RequiredObservationsModal
+        visible={missingRequired !== null}
+        fields={missingRequired ?? []}
+        initialValues={observations}
+        onComplete={handleRequiredComplete}
+        onCancel={() => setMissingRequired(null)}
+        disabled={isLoading}
+      />
     </ScrollView>
   );
 }

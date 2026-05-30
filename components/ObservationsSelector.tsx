@@ -1,82 +1,137 @@
 import {
-  OBSERVATION_EMOJIS,
-  OBSERVATION_LABELS,
+  OBSERVATION_FIELDS,
+  ObservationField,
 } from "@/constants/observations";
 import { Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
-import { ObservationType } from "@/src/types";
+import { ObservationType, ObservationValue } from "@/src/types";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ObservationsSelectorProps {
-  selectedObservations: ObservationType[];
-  onToggleObservation: (observation: ObservationType) => void;
+  /** Mapa atual de observações: { colica: true, estresse: 2 } */
+  value: Partial<Record<ObservationType, ObservationValue>>;
+  /** Define (ou remove, quando `undefined`) o valor de um campo */
+  onChange: (id: ObservationType, value: ObservationValue | undefined) => void;
   disabled?: boolean;
+  /** Restringe quais campos exibir (ex.: só os obrigatórios no modal) */
+  onlyFields?: ObservationType[];
+  /** Exibe o título "Observações (opcional)" */
+  showTitle?: boolean;
 }
 
 export function ObservationsSelector({
-  selectedObservations,
-  onToggleObservation,
+  value,
+  onChange,
   disabled = false,
+  onlyFields,
+  showTitle = true,
 }: ObservationsSelectorProps) {
   const { colors } = useAppTheme();
-  const allObservations: ObservationType[] = [
-    "colica",
-    "sangramento",
-    "corrimento",
-    "dor_seio",
-    "dor_costas",
-    "dor_pernas",
-    "dor_cabeca",
-    "espinha",
-    "treino",
-    "sexo_protegido",
-    "sexo_sem_protecao",
-  ];
+
+  const fields = onlyFields
+    ? OBSERVATION_FIELDS.filter((f) => onlyFields.includes(f.id))
+    : OBSERVATION_FIELDS;
+
+  const toggleFields = fields.filter((f) => f.kind === "toggle");
+  const scaleFields = fields.filter((f) => f.kind === "scale");
+
+  const renderToggle = (field: ObservationField) => {
+    const isSelected = value[field.id] === true;
+    return (
+      <TouchableOpacity
+        key={field.id}
+        style={[
+          styles.chip,
+          {
+            backgroundColor: isSelected ? colors.action : colors.surface,
+            borderColor: colors.border,
+            shadowColor: colors.text,
+          },
+          disabled && styles.chipDisabled,
+        ]}
+        onPress={() =>
+          !disabled && onChange(field.id, isSelected ? undefined : true)
+        }
+        disabled={disabled}
+      >
+        <Text style={styles.emoji}>{field.emoji}</Text>
+        <Text
+          style={[
+            styles.chipText,
+            { color: isSelected ? colors.white : colors.text },
+            isSelected && styles.chipTextSelected,
+            disabled && styles.chipTextDisabled,
+          ]}
+        >
+          {field.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderScale = (field: ObservationField) => {
+    const current = value[field.id];
+    return (
+      <View key={field.id} style={styles.scaleSection}>
+        <Text style={[styles.scaleTitle, { color: colors.text }]}>
+          {field.emoji} {field.label}
+          {field.required ? <Text style={styles.required}> *</Text> : null}
+        </Text>
+        <View style={styles.chipsContainer}>
+          {field.levels?.map((level) => {
+            const isSelected = current === level.value;
+            return (
+              <TouchableOpacity
+                key={level.value}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: isSelected
+                      ? colors.action
+                      : colors.surface,
+                    borderColor: colors.border,
+                    shadowColor: colors.text,
+                  },
+                  disabled && styles.chipDisabled,
+                ]}
+                onPress={() => !disabled && onChange(field.id, level.value)}
+                disabled={disabled}
+              >
+                <Text style={styles.emoji}>{level.emoji}</Text>
+                <Text
+                  style={[
+                    styles.chipText,
+                    { color: isSelected ? colors.white : colors.text },
+                    isSelected && styles.chipTextSelected,
+                    disabled && styles.chipTextDisabled,
+                  ]}
+                >
+                  {level.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>
-        Observações (opcional)
-      </Text>
-      <View style={styles.chipsContainer}>
-        {allObservations.map((observation) => {
-          const isSelected = selectedObservations.includes(observation);
-          return (
-            <TouchableOpacity
-              key={observation}
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: isSelected ? colors.action : colors.surface,
-                  borderColor: colors.border,
-                  shadowColor: colors.text,
-                },
-                isSelected && styles.chipSelected,
-                disabled && styles.chipDisabled,
-              ]}
-              onPress={() => !disabled && onToggleObservation(observation)}
-              disabled={disabled}
-            >
-              <Text style={styles.emoji}>
-                {OBSERVATION_EMOJIS[observation]}
-              </Text>
-              <Text
-                style={[
-                  styles.chipText,
-                  {
-                    color: isSelected ? colors.white : colors.text,
-                  },
-                  isSelected && styles.chipTextSelected,
-                  disabled && styles.chipTextDisabled,
-                ]}
-              >
-                {OBSERVATION_LABELS[observation]}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {showTitle && (
+        <Text style={[styles.title, { color: colors.text }]}>
+          Observações (opcional)
+        </Text>
+      )}
+
+      {toggleFields.length > 0 && (
+        <View style={styles.chipsContainer}>
+          {toggleFields.map(renderToggle)}
+        </View>
+      )}
+
+      {scaleFields.map(renderScale)}
     </View>
   );
 }
@@ -95,6 +150,19 @@ const styles = StyleSheet.create({
     gap: 8,
     justifyContent: "center",
   },
+  scaleSection: {
+    marginTop: 16,
+  },
+  scaleTitle: {
+    ...Typography.caption,
+    fontWeight: "600",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  required: {
+    color: "#C67171",
+    fontWeight: "700",
+  },
   chip: {
     flexDirection: "row",
     alignItems: "center",
@@ -109,9 +177,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
-  },
-  chipSelected: {
-    opacity: 1,
   },
   chipDisabled: {
     opacity: 0.5,
