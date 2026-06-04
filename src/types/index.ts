@@ -20,7 +20,8 @@ export type ObservationType =
   | "sexo_protegido"
   | "sexo_sem_protecao"
   | "alcool" // toggle
-  | "estresse"; // escala (níveis)
+  | "estresse" // escala (níveis)
+  | "dor_estomago";
 
 // Valor por campo de observação:
 // - `true` para campos de toggle (marcado)

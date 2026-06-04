@@ -42,6 +42,7 @@ export const OBSERVATION_FIELDS: ObservationField[] = [
     kind: "toggle",
   },
   { id: "alcool", label: "Bebida Alcoólica", emoji: "🍷", kind: "toggle" },
+  { id: "dor_estomago", label: "Dor no Estômago", emoji: "🤢", kind: "toggle" },
   {
     id: "estresse",
     label: "Estresse",
