@@ -1,13 +1,33 @@
 import { eachDayOfInterval, format, parseISO } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 
+import {
+  getObservationField,
+  SCALE_FIELDS,
+} from "@/constants/observations";
 import { FirestoreService } from "@/src/services/firestoreService";
-import { DailyLog, ObservationType } from "@/src/types";
+import { DailyLog, ObservationType, ObservationValue } from "@/src/types";
 import { getPillDateKey } from "@/src/utils/dateUtils";
 
 export interface ObservationCount {
   type: ObservationType;
   count: number;
+}
+
+export interface ScaleLevelCount {
+  value: number;
+  label: string;
+  emoji: string;
+  count: number;
+}
+
+export interface ScaleDistribution {
+  id: ObservationType;
+  label: string;
+  emoji: string;
+  levels: ScaleLevelCount[];
+  average: number | null;
+  total: number;
 }
 
 export interface AnalyticsData {
@@ -19,6 +39,7 @@ export interface AnalyticsData {
   currentStreak: number;
   maxStreak: number;
   observationCounts: ObservationCount[];
+  scaleDistributions: ScaleDistribution[];
   averageTakenTime: string | null;
   timeDistribution: { morning: number; afternoon: number; evening: number };
   pillTypeCounts: { active: number; placebo: number };
@@ -33,6 +54,7 @@ const EMPTY_RESULT: AnalyticsData = {
   currentStreak: 0,
   maxStreak: 0,
   observationCounts: [],
+  scaleDistributions: [],
   averageTakenTime: null,
   timeDistribution: { morning: 0, afternoon: 0, evening: 0 },
   pillTypeCounts: { active: 0, placebo: 0 },
@@ -128,16 +150,53 @@ export function useAnalytics(
     }
 
     // Observation counts (only days where pill was taken)
+    // Toggles -> contagem de presença; Escalas -> coleta de valores numéricos
     const obsMap = new Map<ObservationType, number>();
+    const scaleValues = new Map<ObservationType, number[]>();
     for (const log of logs) {
       if (!log.taken || !log.observations) continue;
-      for (const obs of log.observations) {
-        obsMap.set(obs, (obsMap.get(obs) ?? 0) + 1);
+      for (const [rawId, value] of Object.entries(log.observations) as [
+        ObservationType,
+        ObservationValue,
+      ][]) {
+        const field = getObservationField(rawId);
+        if (!field) continue; // ignora ids legados/desconhecidos
+        if (field.kind === "toggle") {
+          if (value === true) obsMap.set(rawId, (obsMap.get(rawId) ?? 0) + 1);
+        } else if (field.kind === "scale" && typeof value === "number") {
+          const arr = scaleValues.get(rawId) ?? [];
+          arr.push(value);
+          scaleValues.set(rawId, arr);
+        }
       }
     }
     const observationCounts: ObservationCount[] = Array.from(obsMap.entries())
       .map(([type, count]) => ({ type, count }))
       .sort((a, b) => b.count - a.count);
+
+    // Distribuição por nível para cada campo de escala (ex.: estresse)
+    const scaleDistributions: ScaleDistribution[] = SCALE_FIELDS.map(
+      (field) => {
+        const vals = scaleValues.get(field.id) ?? [];
+        const levels: ScaleLevelCount[] = (field.levels ?? []).map((lvl) => ({
+          value: lvl.value,
+          label: lvl.label,
+          emoji: lvl.emoji,
+          count: vals.filter((v) => v === lvl.value).length,
+        }));
+        const average = vals.length
+          ? vals.reduce((a, b) => a + b, 0) / vals.length
+          : null;
+        return {
+          id: field.id,
+          label: field.label,
+          emoji: field.emoji,
+          levels,
+          average,
+          total: vals.length,
+        };
+      }
+    );
 
     // Time analysis
     const takenLogs = logs.filter((l) => l.taken && l.takenTime);
@@ -175,6 +234,7 @@ export function useAnalytics(
       currentStreak,
       maxStreak,
       observationCounts,
+      scaleDistributions,
       averageTakenTime,
       timeDistribution,
       pillTypeCounts,

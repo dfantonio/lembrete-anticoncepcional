@@ -12,7 +12,38 @@ import {
   where,
 } from "firebase/firestore";
 import { COLLECTIONS, db } from "../config/firebase";
-import { DailyLog, UserConfig, UserRole } from "../types";
+import {
+  DailyLog,
+  ObservationType,
+  ObservationValue,
+  UserConfig,
+  UserRole,
+} from "../types";
+
+/**
+ * Normaliza o campo `observations` lido do Firestore para o formato de mapa.
+ * Documentos legados guardam um array de tags (`["colica", "treino"]`); novos
+ * documentos guardam um mapa (`{ colica: true, estresse: 2 }`).
+ */
+function normalizeObservations(
+  raw: unknown
+): Partial<Record<ObservationType, ObservationValue>> | undefined {
+  if (!raw) return undefined;
+
+  if (Array.isArray(raw)) {
+    const map: Partial<Record<ObservationType, ObservationValue>> = {};
+    for (const key of raw) {
+      if (typeof key === "string") map[key as ObservationType] = true;
+    }
+    return map;
+  }
+
+  if (typeof raw === "object") {
+    return raw as Partial<Record<ObservationType, ObservationValue>>;
+  }
+
+  return undefined;
+}
 
 export class FirestoreService {
   /**
@@ -114,7 +145,7 @@ export class FirestoreService {
           takenTime: data.takenTime,
           alertSent: data.alertSent,
           pillType: data.pillType,
-          observations: data.observations,
+          observations: normalizeObservations(data.observations),
         };
       }
       return null;
@@ -141,6 +172,7 @@ export class FirestoreService {
           takenTime: data.takenTime,
           alertSent: data.alertSent,
           pillType: data.pillType,
+          observations: normalizeObservations(data.observations),
         });
       } else {
         callback(null);
@@ -195,7 +227,7 @@ export class FirestoreService {
           takenTime: data.takenTime,
           alertSent: data.alertSent,
           pillType: data.pillType,
-          observations: data.observations,
+          observations: normalizeObservations(data.observations),
         } as DailyLog;
       });
 
