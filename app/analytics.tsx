@@ -3,7 +3,6 @@ import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   Modal,
   ScrollView,
   StyleSheet,
@@ -11,10 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar } from "react-native-calendars";
 import { MarkedDates } from "react-native-calendars/src/types";
 import { BarChart } from "react-native-gifted-charts";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/AppHeader";
 import { getObservationField } from "@/constants/observations";
@@ -32,7 +31,10 @@ const PRESETS: { key: PeriodPreset; label: string; months: number }[] = [
   { key: "1A", label: "1A", months: 12 },
 ];
 
-function getDateRange(months: number): { startDateKey: string; endDateKey: string } {
+function getDateRange(months: number): {
+  startDateKey: string;
+  endDateKey: string;
+} {
   const today = new Date();
   return {
     startDateKey: formatDateKey(subMonths(today, months)),
@@ -52,16 +54,26 @@ function buildPeriodMarks(
   start: string | null,
   end: string | null,
   actionColor: string,
-  white: string
+  white: string,
 ): MarkedDates {
   if (!start) return {};
 
   if (!end) {
-    return { [start]: { startingDay: true, endingDay: true, color: actionColor, textColor: white } };
+    return {
+      [start]: {
+        startingDay: true,
+        endingDay: true,
+        color: actionColor,
+        textColor: white,
+      },
+    };
   }
 
   const marks: MarkedDates = {};
-  const days = eachDayOfInterval({ start: parseISO(start), end: parseISO(end) });
+  const days = eachDayOfInterval({
+    start: parseISO(start),
+    end: parseISO(end),
+  });
 
   for (const day of days) {
     const key = format(day, "yyyy-MM-dd");
@@ -152,17 +164,24 @@ export default function AnalyticsScreen() {
     pillTypeCounts,
   } = useAnalytics(startDateKey, endDateKey);
 
-  const screenWidth = Dimensions.get("window").width;
-  // paddingHorizontal 20*2 + card padding 20*2
-  const chartWidth = screenWidth - 80;
+  const BAR_WIDTH = 27;
+  const BAR_SPACING = 8;
 
   const chartData = useMemo(() => {
     return observationCounts.map((obs) => {
+      const emoji = getObservationField(obs.type)?.emoji ?? "•";
       return {
         value: obs.count,
+        label: emoji,
         frontColor: colors.action,
         topLabelComponent: () => (
-          <Text style={{ color: colors.textSecondary, fontSize: 11, marginBottom: 2 }}>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 11,
+              marginBottom: 2,
+            }}
+          >
             {obs.count}
           </Text>
         ),
@@ -201,7 +220,9 @@ export default function AnalyticsScreen() {
                 styles.periodButton,
                 {
                   backgroundColor:
-                    !isCustom && period === p.key ? colors.action : colors.surface,
+                    !isCustom && period === p.key
+                      ? colors.action
+                      : colors.surface,
                   borderColor: colors.border,
                 },
               ]}
@@ -209,7 +230,12 @@ export default function AnalyticsScreen() {
               <Text
                 style={[
                   styles.periodButtonText,
-                  { color: !isCustom && period === p.key ? colors.white : colors.text },
+                  {
+                    color:
+                      !isCustom && period === p.key
+                        ? colors.white
+                        : colors.text,
+                  },
                 ]}
               >
                 {p.label}
@@ -248,13 +274,19 @@ export default function AnalyticsScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowPicker(false)}
       >
-        <SafeAreaView style={[styles.pickerContainer, { backgroundColor: colors.base }]}>
+        <SafeAreaView
+          style={[styles.pickerContainer, { backgroundColor: colors.base }]}
+        >
           <View style={styles.pickerHeader}>
             <Text style={[styles.pickerTitle, { color: colors.text }]}>
               Período personalizado
             </Text>
             <TouchableOpacity onPress={() => setShowPicker(false)}>
-              <Text style={[styles.pickerClose, { color: colors.textSecondary }]}>✕</Text>
+              <Text
+                style={[styles.pickerClose, { color: colors.textSecondary }]}
+              >
+                ✕
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -262,13 +294,18 @@ export default function AnalyticsScreen() {
             {pickingStep === "start"
               ? "Selecione a data de início"
               : tempEnd
-              ? `${formatPeriodLabel(tempStart!, tempEnd)}`
-              : `Início: ${formatPeriodLabel(tempStart!, tempStart!)} — Selecione o fim`}
+                ? `${formatPeriodLabel(tempStart!, tempEnd)}`
+                : `Início: ${formatPeriodLabel(tempStart!, tempStart!)} — Selecione o fim`}
           </Text>
 
           <Calendar
             markingType="period"
-            markedDates={buildPeriodMarks(tempStart, tempEnd, colors.action, colors.white)}
+            markedDates={buildPeriodMarks(
+              tempStart,
+              tempEnd,
+              colors.action,
+              colors.white,
+            )}
             maxDate={todayKey}
             onDayPress={handlePickerDayPress}
             theme={{
@@ -290,7 +327,8 @@ export default function AnalyticsScreen() {
               style={[
                 styles.pickerConfirm,
                 {
-                  backgroundColor: tempStart && tempEnd ? colors.action : colors.border,
+                  backgroundColor:
+                    tempStart && tempEnd ? colors.action : colors.border,
                 },
               ]}
             >
@@ -322,7 +360,9 @@ export default function AnalyticsScreen() {
                 {adherencePercent}%
               </Text>
               <View style={styles.adherenceDetails}>
-                <Text style={[styles.adherenceDetail, { color: colors.success }]}>
+                <Text
+                  style={[styles.adherenceDetail, { color: colors.success }]}
+                >
                   {takenCount} tomadas
                 </Text>
                 <Text style={[styles.adherenceDetail, { color: colors.alert }]}>
@@ -348,7 +388,9 @@ export default function AnalyticsScreen() {
                 <Text style={[styles.streakNumber, { color: colors.text }]}>
                   {currentStreak}
                 </Text>
-                <Text style={[styles.streakLabel, { color: colors.textSecondary }]}>
+                <Text
+                  style={[styles.streakLabel, { color: colors.textSecondary }]}
+                >
                   Sequência atual
                 </Text>
               </View>
@@ -362,7 +404,9 @@ export default function AnalyticsScreen() {
                 <Text style={[styles.streakNumber, { color: colors.text }]}>
                   {maxStreak}
                 </Text>
-                <Text style={[styles.streakLabel, { color: colors.textSecondary }]}>
+                <Text
+                  style={[styles.streakLabel, { color: colors.textSecondary }]}
+                >
                   Maior sequência
                 </Text>
               </View>
@@ -375,33 +419,37 @@ export default function AnalyticsScreen() {
               <Text style={[styles.cardTitle, { color: colors.text }]}>
                 Sintomas e Observações
               </Text>
-              <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.cardSubtitle, { color: colors.textSecondary }]}
+              >
                 Ocorrências no período
               </Text>
 
-              <BarChart
-                data={chartData}
-                width={chartWidth}
-                height={160}
-                noOfSections={3}
-                barBorderRadius={4}
-                hideRules
-                xAxisThickness={0}
-                yAxisThickness={0}
-                yAxisTextStyle={{
-                  color: colors.textSecondary,
-                  fontSize: 11,
-                }}
-                barWidth={Math.max(
-                  14,
-                  Math.floor((chartWidth - 50) / chartData.length) - 6
-                )}
-                spacing={Math.max(
-                  4,
-                  Math.floor((chartWidth - 50) / chartData.length) - Math.max(14, Math.floor((chartWidth - 50) / chartData.length) - 6)
-                )}
-                isAnimated
-              />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.chartScroll}
+              >
+                <BarChart
+                  data={chartData}
+                  width={(BAR_WIDTH + BAR_SPACING) * chartData.length + 40}
+                  height={160}
+                  noOfSections={3}
+                  barBorderRadius={4}
+                  hideRules
+                  xAxisThickness={0}
+                  yAxisThickness={0}
+                  yAxisTextStyle={{
+                    color: colors.textSecondary,
+                    fontSize: 11,
+                  }}
+                  xAxisLabelsHeight={20}
+                  xAxisLabelTextStyle={{ fontSize: 14 }}
+                  barWidth={BAR_WIDTH}
+                  spacing={BAR_SPACING}
+                  isAnimated
+                />
+              </ScrollView>
 
               {/* Legend */}
               <View style={styles.legendContainer}>
@@ -688,6 +736,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  chartScroll: { marginHorizontal: -4 },
   legendContainer: { marginTop: 12, gap: 6 },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 8 },
   legendEmoji: { fontSize: 16, lineHeight: 24 },
