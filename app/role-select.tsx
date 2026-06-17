@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Image, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { Typography } from "@/constants/theme";
@@ -50,7 +50,10 @@ export default function RoleSelectScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.base }]}>
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Logo */}
         <View style={styles.logoContainer}>
           <Image
@@ -88,7 +91,7 @@ export default function RoleSelectScreen() {
           A Sasa receberá lembretes diários às 20h.{"\n"}O Tonho será notificado
           às 22h se a pílula não for registrada.
         </Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -98,7 +101,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 24,
     paddingVertical: 40,
     justifyContent: "center",

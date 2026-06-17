@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Alert,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -294,7 +295,11 @@ export function DayDetailsModal({
           <View style={styles.placeholder} />
         </View>
 
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Data */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -418,7 +423,7 @@ export function DayDetailsModal({
               </TouchableOpacity>
             )}
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
 
       {/* Modal de Observações para Registro Retroativo */}
@@ -446,7 +451,11 @@ export function DayDetailsModal({
             <View style={styles.placeholder} />
           </View>
 
-          <View style={styles.content}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 Selecione as observações para este dia:
@@ -479,7 +488,7 @@ export function DayDetailsModal({
                 </View>
               </View>
             </View>
-          </View>
+          </ScrollView>
         </SafeAreaView>
       </Modal>
     </Modal>
@@ -515,8 +524,10 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 32,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
@@ -634,7 +645,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   actionsSection: {
-    marginTop: "auto",
+    marginTop: 8,
     paddingTop: 20,
   },
   deleteButton: {

@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
@@ -79,7 +79,11 @@ export default function MainBFScreen() {
     <View style={[styles.container, { backgroundColor: colors.base }]}>
       <AppHeader title="Acompanhamento" showThemeToggle />
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Status do dia */}
         <View style={styles.statusSection}>
           <StatusCard
@@ -139,7 +143,7 @@ export default function MainBFScreen() {
             app.
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -148,8 +152,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
@@ -204,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#333333", // Keep as fallback
   },
   additionalInfo: {
-    marginTop: "auto",
+    marginTop: 8,
   },
   additionalInfoText: {
     ...Typography.caption,
