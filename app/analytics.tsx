@@ -158,10 +158,8 @@ export default function AnalyticsScreen() {
 
   const chartData = useMemo(() => {
     return observationCounts.map((obs) => {
-      const emoji = getObservationField(obs.type)?.emoji;
       return {
         value: obs.count,
-        label: emoji ? Array.from(emoji)[0] : "•",
         frontColor: colors.action,
         topLabelComponent: () => (
           <Text style={{ color: colors.textSecondary, fontSize: 11, marginBottom: 2 }}>
@@ -394,7 +392,6 @@ export default function AnalyticsScreen() {
                   color: colors.textSecondary,
                   fontSize: 11,
                 }}
-                xAxisLabelTextStyle={{ fontSize: 18, lineHeight: 20, height: 24 }}
                 barWidth={Math.max(
                   14,
                   Math.floor((chartWidth - 50) / chartData.length) - 6
