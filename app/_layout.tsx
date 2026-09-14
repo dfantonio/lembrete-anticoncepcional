@@ -15,7 +15,7 @@ function AppContent() {
 
   useEffect(() => {
     console.log("Inicializando aplicação...");
-    SplashScreen.hide();
+    SplashScreen.hideAsync().catch(() => {});
   }, []);
 
   return (
@@ -33,10 +33,7 @@ function AppContent() {
           <Stack.Screen name={ScreenName.MainBF} />
           <Stack.Screen name={ScreenName.CalendarHistory} />
         </Stack>
-        <StatusBar
-          style={theme === "dark" ? "light" : "dark"}
-          backgroundColor={colors.base}
-        />
+        <StatusBar style={theme === "dark" ? "light" : "dark"} />
       </SafeAreaView>
     </SafeAreaProvider>
   );

@@ -18,37 +18,41 @@ export default function MainBFScreen() {
   const [dailyLog, setDailyLog] = useState<DailyLog | null>(null);
 
   useEffect(() => {
-    initializeScreen();
-  }, []);
+    let unsubscribe: (() => void) | undefined;
 
-  const initializeScreen = async () => {
-    try {
-      // Verificar autenticação
-      const userId = AuthService.getCurrentUserId();
-      if (!userId) {
-        router.replace("/role-select");
-        return;
+    async function initializeScreen() {
+      try {
+        // Verificar autenticação
+        const userId = AuthService.getCurrentUserId();
+        if (!userId) {
+          router.replace("/role-select");
+          return;
+        }
+
+        // Registrar para push notifications e salvar token
+        const pushToken =
+          await NotificationService.registerForPushNotifications();
+        if (pushToken) {
+          await NotificationService.savePushTokenToFirestore();
+          console.log("✅ Push token registrado e salvo");
+        }
+
+        // Observar mudanças no log diário
+        const today = formatDateKey(); // YYYY-MM-DD
+        unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
+          setDailyLog(log);
+        });
+      } catch (error) {
+        console.error("❌ Erro na inicialização da tela BF:", error);
       }
-
-      // Registrar para push notifications e salvar token
-      const pushToken =
-        await NotificationService.registerForPushNotifications();
-      if (pushToken) {
-        await NotificationService.savePushTokenToFirestore();
-        console.log("✅ Push token registrado e salvo");
-      }
-
-      // Observar mudanças no log diário
-      const today = formatDateKey(); // YYYY-MM-DD
-      const unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
-        setDailyLog(log);
-      });
-
-      return unsubscribe;
-    } catch (error) {
-      console.error("❌ Erro na inicialização da tela BF:", error);
     }
-  };
+
+    initializeScreen();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   const navigateToHistory = () => {
     router.push("/calendar-history");

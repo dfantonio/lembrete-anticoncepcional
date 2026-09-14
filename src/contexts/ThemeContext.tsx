@@ -30,6 +30,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Carrega preferência salva ao inicializar
   useEffect(() => {
+    async function loadThemePreference() {
+      try {
+        const savedThemeMode = await StorageService.getThemeMode();
+        setThemeModeState(savedThemeMode);
+      } catch (error) {
+        console.error("❌ Erro ao carregar preferência de tema:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     loadThemePreference();
   }, []);
 
@@ -39,17 +50,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       // O tema será automaticamente atualizado quando systemColorScheme mudar
     }
   }, [systemColorScheme, themeMode]);
-
-  const loadThemePreference = async () => {
-    try {
-      const savedThemeMode = await StorageService.getThemeMode();
-      setThemeModeState(savedThemeMode);
-    } catch (error) {
-      console.error("❌ Erro ao carregar preferência de tema:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const setThemeMode = async (mode: ThemeMode) => {
     try {

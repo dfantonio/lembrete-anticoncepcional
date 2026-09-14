@@ -12,39 +12,39 @@ export default function Index() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    async function initializeApp() {
+      try {
+        console.log("🔄 Inicializando aplicação...");
+
+        // 1. Autenticação anônima
+        const userId = await AuthService.signInAnonymously();
+        console.log("✅ Usuário autenticado:", userId);
+
+        // 2. Buscar configuração do usuário
+        const userConfig = await FirestoreService.getUserConfig(userId);
+
+        if (userConfig?.role) {
+          // Usuário já tem role definido, redirecionar para tela apropriada
+          if (userConfig.role === "GF_PILL_TAKER") {
+            router.replace(`/${ScreenName.MainGF}`);
+          } else if (userConfig.role === "BF_REMINDER") {
+            router.replace(`/${ScreenName.MainBF}`);
+          }
+        } else {
+          // Usuário não tem role, ir para seleção de papel
+          router.replace(`/${ScreenName.RoleSelect}`);
+        }
+      } catch (error) {
+        console.error("❌ Erro na inicialização:", error);
+        // Em caso de erro, vai para tela de seleção de papel
+        router.replace(`/${ScreenName.RoleSelect}`);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
     initializeApp();
   }, []);
-
-  const initializeApp = async () => {
-    try {
-      console.log("🔄 Inicializando aplicação...");
-
-      // 1. Autenticação anônima
-      const userId = await AuthService.signInAnonymously();
-      console.log("✅ Usuário autenticado:", userId);
-
-      // 2. Buscar configuração do usuário
-      const userConfig = await FirestoreService.getUserConfig(userId);
-
-      if (userConfig?.role) {
-        // Usuário já tem role definido, redirecionar para tela apropriada
-        if (userConfig.role === "GF_PILL_TAKER") {
-          router.replace(`/${ScreenName.MainGF}`);
-        } else if (userConfig.role === "BF_REMINDER") {
-          router.replace(`/${ScreenName.MainBF}`);
-        }
-      } else {
-        // Usuário não tem role, ir para seleção de papel
-        router.replace(`/${ScreenName.RoleSelect}`);
-      }
-    } catch (error) {
-      console.error("❌ Erro na inicialização:", error);
-      // Em caso de erro, vai para tela de seleção de papel
-      router.replace(`/${ScreenName.RoleSelect}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (isLoading) {
     return (

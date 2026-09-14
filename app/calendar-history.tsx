@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -27,13 +27,8 @@ export default function CalendarHistoryScreen() {
     null
   );
 
-  useEffect(() => {
-    loadHistoryData();
-  }, []);
-
-  const loadHistoryData = async () => {
+  const loadHistoryData = useCallback(async () => {
     try {
-      setIsLoading(true);
       const logs = await FirestoreService.getRecentLogs(30);
       setDailyLogs(logs);
     } catch (error) {
@@ -41,7 +36,31 @@ export default function CalendarHistoryScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function init() {
+      try {
+        const logs = await FirestoreService.getRecentLogs(30);
+        if (isMounted) {
+          setDailyLogs(logs);
+        }
+      } catch (error) {
+        console.error("❌ Erro ao carregar histórico:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleDayPress = async (day: any) => {
     const dateKey = day.dateString;
@@ -63,6 +82,7 @@ export default function CalendarHistoryScreen() {
   };
 
   const handleDataChanged = () => {
+    setIsLoading(true);
     loadHistoryData();
     handleModalClose();
   };

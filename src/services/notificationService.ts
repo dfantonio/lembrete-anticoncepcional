@@ -204,7 +204,10 @@ export class NotificationService {
           body: "Esta é uma notificação de teste!",
           sound: true,
         },
-        trigger: { seconds: 2 } as any,
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: 2,
+        },
       });
       console.log("✅ Notificação de teste enviada");
     } catch (error) {

@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -25,39 +25,49 @@ export default function MainGFScreen() {
   >([]);
   const [selectedPillType, setSelectedPillType] = useState<PillType>("active");
 
-  const initializeScreen = useCallback(async () => {
-    try {
-      // Verificar autenticação
-      const userId = AuthService.getCurrentUserId();
-      if (!userId) {
-        router.replace(`/${ScreenName.RoleSelect}`);
-        return;
-      }
-
-      // Carregar último tipo de pílula selecionado
-      const lastPillType = await StorageService.getLastPillType();
-      setSelectedPillType(lastPillType);
-
-      // Solicitar permissões de notificação
-      await NotificationService.requestPermissions();
-
-      await NotificationService.scheduleWeeklyNotifications();
-
-      // Observar mudanças no log diário
-      const today = formatDateKey(); // YYYY-MM-DD no timezone local
-      const unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
-        setDailyLog(log);
-      });
-
-      return unsubscribe;
-    } catch (error) {
-      console.error("❌ Erro na inicialização da tela GF:", error);
-    }
-  }, []);
-
   useEffect(() => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+
+    async function initializeScreen() {
+      try {
+        // Verificar autenticação
+        const userId = AuthService.getCurrentUserId();
+        if (!userId) {
+          router.replace(`/${ScreenName.RoleSelect}`);
+          return;
+        }
+
+        // Carregar último tipo de pílula selecionado
+        const lastPillType = await StorageService.getLastPillType();
+        if (isMounted) {
+          setSelectedPillType(lastPillType);
+        }
+
+        // Solicitar permissões de notificação
+        await NotificationService.requestPermissions();
+
+        await NotificationService.scheduleWeeklyNotifications();
+
+        // Observar mudanças no log diário
+        const today = formatDateKey(); // YYYY-MM-DD no timezone local
+        unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
+          if (isMounted) {
+            setDailyLog(log);
+          }
+        });
+      } catch (error) {
+        console.error("❌ Erro na inicialização da tela GF:", error);
+      }
+    }
+
     initializeScreen();
-  }, [initializeScreen]);
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   const handlePillTaken = async () => {
     try {

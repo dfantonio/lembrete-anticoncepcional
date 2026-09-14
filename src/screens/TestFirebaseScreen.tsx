@@ -1,28 +1,23 @@
 import * as Clipboard from "expo-clipboard";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { AuthService } from "../services/authService";
 import { FirestoreService } from "../services/firestoreService";
 import { NotificationService } from "../services/notificationService";
 
 export default function TestFirebaseScreen() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<string[]>([]);
 
-  const addResult = (result: string) => {
+  const addResult = useCallback((result: string) => {
     setTestResults((prev) => [
       ...prev,
       `${new Date().toLocaleTimeString()}: ${result}`,
     ]);
-  };
-
-  useEffect(() => {
-    // Testar autenticação ao carregar
-    testAuthentication();
   }, []);
 
-  const testAuthentication = async () => {
+  const testAuthentication = useCallback(async () => {
     setIsLoading(true);
     try {
       const id = await AuthService.signInAnonymously();
@@ -30,9 +25,37 @@ export default function TestFirebaseScreen() {
       addResult(`✅ Autenticação: ${id.substring(0, 8)}...`);
     } catch (error) {
       addResult(`❌ Erro na autenticação: ${error}`);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
+  }, [addResult]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function init() {
+      try {
+        const id = await AuthService.signInAnonymously();
+        if (isMounted) {
+          setUserId(id);
+          addResult(`✅ Autenticação: ${id.substring(0, 8)}...`);
+        }
+      } catch (error) {
+        if (isMounted) {
+          addResult(`❌ Erro na autenticação: ${error}`);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [addResult]);
 
   const testFirestore = async () => {
     if (!userId) {
@@ -60,6 +83,7 @@ export default function TestFirebaseScreen() {
         dateKey: today,
         taken: false,
         alertSent: false,
+        pillType: "active",
       });
       addResult("✅ Log diário salvo");
     } catch (error) {
