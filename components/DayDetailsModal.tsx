@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Alert,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,16 +12,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/Button";
 import { ObservationsSelector } from "@/components/ObservationsSelector";
-import {
-  OBSERVATION_EMOJIS,
-  OBSERVATION_LABELS,
-} from "@/constants/observations";
+import { getLevel, getObservationField } from "@/constants/observations";
 import { PILL_TYPE_EMOJIS, PILL_TYPE_LABELS } from "@/constants/pillTypes";
 import { Typography } from "@/constants/theme";
 import { useAppTheme } from "@/src/contexts/ThemeContext";
 import { FirestoreService } from "@/src/services/firestoreService";
-import { DailyLog, ObservationType, PillType } from "@/src/types";
+import {
+  DailyLog,
+  ObservationType,
+  ObservationValue,
+  PillType,
+} from "@/src/types";
 import { formatDateForDisplay, isPastDate } from "@/src/utils/dateUtils";
+
+type ObservationMap = Partial<Record<ObservationType, ObservationValue>>;
 
 interface DayDetailsModalProps {
   visible: boolean;
@@ -39,19 +44,29 @@ export function DayDetailsModal({
 }: DayDetailsModalProps) {
   const { colors } = useAppTheme();
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedObservations, setSelectedObservations] = useState<
-    ObservationType[]
-  >(dailyLog?.observations || []);
+  const [selectedObservations, setSelectedObservations] =
+    useState<ObservationMap>(dailyLog?.observations || {});
   const [isLoading, setIsLoading] = useState(false);
   const [showObservationsDialog, setShowObservationsDialog] = useState(false);
-  const [tempObservations, setTempObservations] = useState<ObservationType[]>(
-    []
-  );
+  const [tempObservations, setTempObservations] = useState<ObservationMap>({});
   const [selectedPillType, setSelectedPillType] = useState<PillType>("active");
+
+  const setObservation = (
+    setter: React.Dispatch<React.SetStateAction<ObservationMap>>,
+    id: ObservationType,
+    value: ObservationValue | undefined
+  ) => {
+    setter((prev) => {
+      const next = { ...prev };
+      if (value === undefined) delete next[id];
+      else next[id] = value;
+      return next;
+    });
+  };
 
   const handleEditObservations = () => {
     setIsEditing(true);
-    setSelectedObservations(dailyLog?.observations || []);
+    setSelectedObservations(dailyLog?.observations || {});
   };
 
   const handleSaveObservations = async () => {
@@ -69,7 +84,9 @@ export function DayDetailsModal({
       const updatedLog: DailyLog = {
         ...dailyLog,
         observations:
-          selectedObservations.length > 0 ? selectedObservations : undefined,
+          Object.keys(selectedObservations).length > 0
+            ? selectedObservations
+            : undefined,
       };
 
       await FirestoreService.saveDailyLog(dateKey, updatedLog);
@@ -90,7 +107,7 @@ export function DayDetailsModal({
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setSelectedObservations(dailyLog?.observations || []);
+    setSelectedObservations(dailyLog?.observations || {});
   };
 
   const handleRegisterPill = () => {
@@ -100,32 +117,32 @@ export function DayDetailsModal({
         text: PILL_TYPE_LABELS.active + PILL_TYPE_EMOJIS.active,
         onPress: () => {
           setSelectedPillType("active");
-          handlePillTypeSelection();
+          handlePillTypeSelection("active");
         },
       },
       {
         text: PILL_TYPE_LABELS.placebo + PILL_TYPE_EMOJIS.placebo,
         onPress: () => {
           setSelectedPillType("placebo");
-          handlePillTypeSelection();
+          handlePillTypeSelection("placebo");
         },
       },
     ]);
   };
 
-  const handlePillTypeSelection = () => {
+  const handlePillTypeSelection = (pillType: PillType) => {
     Alert.alert(
       "Adicionar Observações",
       "Deseja adicionar observações para este dia?",
       [
         {
           text: "Não",
-          onPress: () => handleConfirmRegister([], selectedPillType),
+          onPress: () => handleConfirmRegister({}, pillType),
         },
         {
           text: "Sim",
           onPress: () => {
-            setTempObservations([]);
+            setTempObservations({});
             setShowObservationsDialog(true);
           },
         },
@@ -134,7 +151,7 @@ export function DayDetailsModal({
   };
 
   const handleConfirmRegister = async (
-    observations: ObservationType[],
+    observations: ObservationMap,
     pillType: PillType = "active"
   ) => {
     if (!dateKey) {
@@ -150,7 +167,7 @@ export function DayDetailsModal({
         takenTime: "20:00",
         alertSent: true,
         pillType: pillType,
-        ...(observations.length > 0 && { observations }),
+        ...(Object.keys(observations).length > 0 && { observations }),
       };
 
       await FirestoreService.saveDailyLog(dateKey, retroactiveLog);
@@ -175,7 +192,7 @@ export function DayDetailsModal({
 
   const handleCancelObservationsDialog = () => {
     setShowObservationsDialog(false);
-    setTempObservations([]);
+    setTempObservations({});
   };
 
   const handleDeleteRecord = () => {
@@ -214,7 +231,12 @@ export function DayDetailsModal({
   };
 
   const renderObservations = () => {
-    if (!dailyLog?.observations || dailyLog.observations.length === 0) {
+    const entries = Object.entries(dailyLog?.observations || {}) as [
+      ObservationType,
+      ObservationValue,
+    ][];
+
+    if (entries.length === 0) {
       return (
         <Text
           style={[styles.noObservationsText, { color: colors.textSecondary }]}
@@ -226,22 +248,27 @@ export function DayDetailsModal({
 
     return (
       <View style={styles.observationsContainer}>
-        {dailyLog.observations.map((observation) => (
-          <View
-            key={observation}
-            style={[
-              styles.observationChip,
-              { backgroundColor: colors.action, shadowColor: colors.text },
-            ]}
-          >
-            <Text style={styles.observationEmoji}>
-              {OBSERVATION_EMOJIS[observation]}
-            </Text>
-            <Text style={styles.observationText}>
-              {OBSERVATION_LABELS[observation]}
-            </Text>
-          </View>
-        ))}
+        {entries.map(([id, value]) => {
+          const field = getObservationField(id);
+          if (!field) return null; // ignora ids legados/desconhecidos
+
+          const level = getLevel(field, value);
+          const emoji = level?.emoji ?? field.emoji;
+          const label = level ? `${field.label}: ${level.label}` : field.label;
+
+          return (
+            <View
+              key={id}
+              style={[
+                styles.observationChip,
+                { backgroundColor: colors.action, shadowColor: colors.text },
+              ]}
+            >
+              <Text style={styles.observationEmoji}>{emoji}</Text>
+              <Text style={styles.observationText}>{label}</Text>
+            </View>
+          );
+        })}
       </View>
     );
   };
@@ -268,7 +295,11 @@ export function DayDetailsModal({
           <View style={styles.placeholder} />
         </View>
 
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Data */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -343,14 +374,10 @@ export function DayDetailsModal({
                 ]}
               >
                 <ObservationsSelector
-                  selectedObservations={selectedObservations}
-                  onToggleObservation={(obs) => {
-                    setSelectedObservations((prev) =>
-                      prev.includes(obs)
-                        ? prev.filter((o) => o !== obs)
-                        : [...prev, obs]
-                    );
-                  }}
+                  value={selectedObservations}
+                  onChange={(id, value) =>
+                    setObservation(setSelectedObservations, id, value)
+                  }
                 />
 
                 <View style={styles.editActions}>
@@ -396,7 +423,7 @@ export function DayDetailsModal({
               </TouchableOpacity>
             )}
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
 
       {/* Modal de Observações para Registro Retroativo */}
@@ -424,7 +451,11 @@ export function DayDetailsModal({
             <View style={styles.placeholder} />
           </View>
 
-          <View style={styles.content}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 Selecione as observações para este dia:
@@ -436,14 +467,10 @@ export function DayDetailsModal({
                 ]}
               >
                 <ObservationsSelector
-                  selectedObservations={tempObservations}
-                  onToggleObservation={(obs) => {
-                    setTempObservations((prev) =>
-                      prev.includes(obs)
-                        ? prev.filter((o) => o !== obs)
-                        : [...prev, obs]
-                    );
-                  }}
+                  value={tempObservations}
+                  onChange={(id, value) =>
+                    setObservation(setTempObservations, id, value)
+                  }
                 />
 
                 <View style={styles.editActions}>
@@ -461,7 +488,7 @@ export function DayDetailsModal({
                 </View>
               </View>
             </View>
-          </View>
+          </ScrollView>
         </SafeAreaView>
       </Modal>
     </Modal>
@@ -497,8 +524,10 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 32,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
@@ -616,7 +645,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   actionsSection: {
-    marginTop: "auto",
+    marginTop: 8,
     paddingTop: 20,
   },
   deleteButton: {

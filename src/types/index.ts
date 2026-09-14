@@ -16,8 +16,17 @@ export type ObservationType =
   | "dor_costas"
   | "dor_pernas"
   | "espinha"
+  | "treino"
   | "sexo_protegido"
-  | "sexo_sem_protecao";
+  | "sexo_sem_protecao"
+  | "alcool" // toggle
+  | "estresse" // escala (níveis)
+  | "dor_estomago";
+
+// Valor por campo de observação:
+// - `true` para campos de toggle (marcado)
+// - número ordinal para campos de escala (ex.: estresse 1=baixo, 2=médio, 3=alto)
+export type ObservationValue = true | number;
 
 export interface UserConfig {
   role: UserRole;
@@ -31,7 +40,9 @@ export interface DailyLog {
   takenTime?: string; // HH:MM
   alertSent: boolean;
   pillType: PillType;
-  observations?: ObservationType[];
+  // Mapa unificado: chave = id do campo, valor = `true` (toggle) ou número (escala).
+  // Documentos legados podem vir como ObservationType[] e são normalizados na leitura.
+  observations?: Partial<Record<ObservationType, ObservationValue>>;
 }
 
 export interface FirebaseConfig {
@@ -50,6 +61,7 @@ export enum ScreenName {
   MainGF = "main-gf",
   MainBF = "main-bf",
   CalendarHistory = "calendar-history",
+  Analytics = "analytics",
 }
 
 export interface AppState {

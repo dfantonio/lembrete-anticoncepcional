@@ -12,7 +12,38 @@ import {
   where,
 } from "firebase/firestore";
 import { COLLECTIONS, db } from "../config/firebase";
-import { DailyLog, UserConfig, UserRole } from "../types";
+import {
+  DailyLog,
+  ObservationType,
+  ObservationValue,
+  UserConfig,
+  UserRole,
+} from "../types";
+
+/**
+ * Normaliza o campo `observations` lido do Firestore para o formato de mapa.
+ * Documentos legados guardam um array de tags (`["colica", "treino"]`); novos
+ * documentos guardam um mapa (`{ colica: true, estresse: 2 }`).
+ */
+function normalizeObservations(
+  raw: unknown
+): Partial<Record<ObservationType, ObservationValue>> | undefined {
+  if (!raw) return undefined;
+
+  if (Array.isArray(raw)) {
+    const map: Partial<Record<ObservationType, ObservationValue>> = {};
+    for (const key of raw) {
+      if (typeof key === "string") map[key as ObservationType] = true;
+    }
+    return map;
+  }
+
+  if (typeof raw === "object") {
+    return raw as Partial<Record<ObservationType, ObservationValue>>;
+  }
+
+  return undefined;
+}
 
 export class FirestoreService {
   /**
@@ -114,7 +145,7 @@ export class FirestoreService {
           takenTime: data.takenTime,
           alertSent: data.alertSent,
           pillType: data.pillType,
-          observations: data.observations,
+          observations: normalizeObservations(data.observations),
         };
       }
       return null;
@@ -141,6 +172,7 @@ export class FirestoreService {
           takenTime: data.takenTime,
           alertSent: data.alertSent,
           pillType: data.pillType,
+          observations: normalizeObservations(data.observations),
         });
       } else {
         callback(null);
@@ -153,23 +185,56 @@ export class FirestoreService {
    */
   static async getRecentLogs(days: number = 30): Promise<DailyLog[]> {
     try {
-      const logs: DailyLog[] = [];
       const today = new Date();
+      const endDateKey = today.toISOString().split("T")[0]; // YYYY-MM-DD
 
-      for (let i = 0; i < days; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - Math.max(0, days - 1));
+      const startDateKey = startDate.toISOString().split("T")[0]; // YYYY-MM-DD
 
-        const log = await this.getDailyLog(dateKey);
-        if (log) {
-          logs.push(log);
-        }
-      }
+      const logs = await this.getLogsByDateRange(startDateKey, endDateKey);
 
-      return logs;
+      // Manter compatibilidade: mais recente primeiro
+      return [...logs].sort((a, b) => b.dateKey.localeCompare(a.dateKey));
     } catch (error) {
       console.error("❌ Erro ao obter logs recentes:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtém logs em um intervalo de datas (inclusive).
+   * Observação: como `dateKey` é string no formato YYYY-MM-DD, a comparação lexicográfica funciona.
+   */
+  static async getLogsByDateRange(
+    startDateKey: string,
+    endDateKey: string
+  ): Promise<DailyLog[]> {
+    try {
+      const logsRef = collection(db, COLLECTIONS.DAILY_LOG);
+      const q = query(
+        logsRef,
+        where("dateKey", ">=", startDateKey),
+        where("dateKey", "<=", endDateKey)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const logs: DailyLog[] = querySnapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          dateKey: data.dateKey,
+          taken: data.taken,
+          takenTime: data.takenTime,
+          alertSent: data.alertSent,
+          pillType: data.pillType,
+          observations: normalizeObservations(data.observations),
+        } as DailyLog;
+      });
+
+      // Ordem previsível (mais antigo -> mais recente); quem chamar pode reordenar se quiser
+      return logs.sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    } catch (error) {
+      console.error("❌ Erro ao obter logs por intervalo de datas:", error);
       throw error;
     }
   }

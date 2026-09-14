@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/Button";
@@ -11,7 +11,7 @@ import { AuthService } from "@/src/services/authService";
 import { FirestoreService } from "@/src/services/firestoreService";
 import { NotificationService } from "@/src/services/notificationService";
 import { DailyLog } from "@/src/types";
-import { formatDateKey } from "@/src/utils/dateUtils";
+import { getPillDateKey } from "@/src/utils/dateUtils";
 
 export default function MainBFScreen() {
   const { colors } = useAppTheme();
@@ -38,7 +38,7 @@ export default function MainBFScreen() {
         }
 
         // Observar mudanças no log diário
-        const today = formatDateKey(); // YYYY-MM-DD
+        const today = getPillDateKey(); // YYYY-MM-DD com virada às 03:00
         unsubscribe = FirestoreService.watchDailyLog(today, (log) => {
           setDailyLog(log);
         });
@@ -56,6 +56,10 @@ export default function MainBFScreen() {
 
   const navigateToHistory = () => {
     router.push("/calendar-history");
+  };
+
+  const navigateToAnalytics = () => {
+    router.push("/analytics");
   };
 
   const getStatusMessage = () => {
@@ -79,7 +83,11 @@ export default function MainBFScreen() {
     <View style={[styles.container, { backgroundColor: colors.base }]}>
       <AppHeader title="Acompanhamento" showThemeToggle />
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Status do dia */}
         <View style={styles.statusSection}>
           <StatusCard
@@ -121,6 +129,11 @@ export default function MainBFScreen() {
             onPress={navigateToHistory}
             style={styles.historyButton}
           />
+          <Button
+            title="Ver Análises"
+            onPress={navigateToAnalytics}
+            style={styles.analyticsButton}
+          />
         </View>
 
         {/* Informações adicionais */}
@@ -134,7 +147,7 @@ export default function MainBFScreen() {
             app.
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -143,8 +156,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
@@ -188,13 +203,18 @@ const styles = StyleSheet.create({
   },
   historySection: {
     marginBottom: 32,
+    gap: 12,
   },
   historyButton: {
     minHeight: 50,
     backgroundColor: "#333333", // Keep as fallback
   },
+  analyticsButton: {
+    minHeight: 50,
+    backgroundColor: "#333333", // Keep as fallback
+  },
   additionalInfo: {
-    marginTop: "auto",
+    marginTop: 8,
   },
   additionalInfoText: {
     ...Typography.caption,

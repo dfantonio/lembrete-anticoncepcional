@@ -1,140 +1,156 @@
 # 💊 Lembrete Anticoncepcional
 
-Aplicativo de lembrete de pílula anticoncepcional com notificações automáticas entre dispositivos.
+Aplicativo pessoal de lembrete de pílula anticoncepcional para um casal, com notificações automáticas entre dispositivos.
 
 ## 🏗️ Arquitetura
 
-Este projeto utiliza uma arquitetura **serverless** baseada em Firebase:
+Arquitetura **serverless** baseada em Firebase:
 
-- **Frontend:** React Native (Expo) - iOS (Expo Go) e Android (EAS Build)
+- **Frontend:** React Native (Expo) + Expo Router — iOS (Expo Go) e Android (EAS Build)
 - **Backend:** Firebase (Firestore + Cloud Functions)
-- **Notificações:** Expo Push API + Notificações Locais
+- **Notificações:** Notificações locais (cliente) + Expo Push API (servidor)
 
-## 🔥 Firebase Functions Implementadas
+### Por que essa arquitetura?
 
-### 1. `dailyPillReminder` (Função Agendada)
+Para evitar a taxa anual de US$99 do Apple Developer Program (necessária para push real via APNs no iOS), os dois papéis usam estratégias diferentes:
 
-- **Execução:** Diariamente às 22:00 (horário de Brasília)
-- **Função:** Verifica se a pílula foi tomada e envia notificação para o BF se necessário
-- **Trigger:** Cloud Scheduler automático
+- **GF (a tomadora)** — roda em **iOS via Expo Go** e depende de **notificações locais** para o lembrete das 21:00.
+- **BF (o lembrete)** — roda em **Android via EAS Build** (binário nativo), o que fornece um `pushToken` Expo válido para receber **push notifications** disparadas pelo servidor — mesmo com o app fechado.
 
-### 2. `testPillReminder` (Função de Teste)
+## 📱 Como funciona
 
-- **Execução:** Manual via HTTP
-- **Função:** Executa a mesma lógica da função agendada para testes
-- **URL:** https://us-central1-app-anticoncepcional.cloudfunctions.net/testPillReminder
+### Papéis
 
-## 📱 Como Funciona
+| Papel | `role` | Plataforma | Função |
+| :---- | :----- | :--------- | :----- |
+| GF | `GF_PILL_TAKER` | iOS (Expo Go) | Toma a pílula e marca como tomada |
+| BF | `BF_REMINDER` | Android (EAS Build) | Recebe os alertas |
 
-### Fluxo Principal:
+Na primeira abertura o app faz login anônimo, e como ainda não há `role` salvo, exibe a tela de seleção de papel. Nas próximas vezes, vai direto para a tela principal correspondente.
 
-1. **GF (iOS)** recebe notificação local às 20:00
-2. **GF** marca pílula como tomada no app
-3. **22:00** - Cloud Function verifica automaticamente:
-   - Se `taken = false` e `alertSent = false`
-   - Envia notificação push para **BF (Android)**
-   - Marca `alertSent = true`
+### Fluxo de notificação
 
-### Estrutura de Dados (Firestore):
+1. **21:00** — GF recebe notificação **local** lembrando de tomar a pílula.
+2. GF marca a pílula como tomada no app (registra `taken`, `takenTime`, tipo da pílula e observações).
+3. Ao confirmar, a notificação local do dia é cancelada e a Cloud Function `notifyBfOnPillTaken` envia um push de confirmação ao BF.
+4. **22:00** — A Cloud Function agendada `dailyPillReminder` verifica o dia: se `taken = false` e `alertSent = false`, envia um **alerta push** ao BF e marca `alertSent = true`.
+
+### Recursos do app
+
+- **Tela GF (`main-gf`)** — status do dia em tempo real, botão "Pílula Tomada", seleção de tipo de pílula (ativo/placebo) e observações.
+- **Tela BF (`main-bf`)** — acompanhamento do status do dia; registra/atualiza o `pushToken` no Firestore.
+- **Histórico (`calendar-history`)** — calendário com os dias tomados/perdidos e detalhes por dia.
+- **Analytics (`analytics`)** — adesão (%), sequências (streaks), distribuição de horários, contagem de observações e tipos de pílula.
+- **Tema** — claro, escuro ou automático (segue o sistema), com a paleta da identidade visual.
+- **Observações diárias** — cólica, sangramento, dor de cabeça, treino, etc. (ver `constants/observations.ts`).
+
+### Estrutura de dados (Firestore)
+
+Caminho base: `artifacts/lembrete-anticoncepcional/public/data/`
 
 ```
-artifacts/lembrete-anticoncepcional/public/data/
-├── daily_log/{YYYY-MM-DD}
-│   ├── taken: boolean
-│   ├── takenTime: string
-│   └── alertSent: boolean
-└── users_config/{userId}
-    ├── role: "GF_PILL_TAKER" | "BF_REMINDER"
-    ├── pushToken: string
-    └── platform: "ios" | "android"
+daily_log/{YYYY-MM-DD}
+├── dateKey: string
+├── taken: boolean
+├── takenTime?: string (HH:MM)
+├── alertSent: boolean          # usada pela Cloud Function das 22:00
+├── pillType: "active" | "placebo"
+├── observations?: string[]
+└── takenNotified?: boolean      # dedupe do push de confirmação
+
+users_config/{userId}
+├── role: "GF_PILL_TAKER" | "BF_REMINDER"
+├── pushToken?: string          # obrigatório apenas para o BF
+└── platform?: "ios" | "android"
 ```
 
-## 🚀 Como Executar
+## ☁️ Cloud Functions (`functions/src/index.ts`)
 
-### 1. Configurar Firebase
+| Função | Tipo | Descrição |
+| :----- | :--- | :-------- |
+| `notifyBfOnPillTaken` | Trigger Firestore | Quando `taken` vira `true` no `daily_log`, envia push de confirmação ao BF (dedupe via `takenNotified`). |
+| `dailyPillReminder` | Agendada (`0 22 * * *`, America/Sao_Paulo) | Às 22:00, se a pílula não foi tomada, alerta o BF e marca `alertSent`. |
+| `testPillReminder` | HTTP | Executa a mesma lógica da agendada, para teste manual. |
 
-**⚠️ IMPORTANTE:** Este projeto requer configuração do Firebase. Os arquivos de configuração sensíveis não estão incluídos no repositório por questões de segurança.
+Todas enviam push via Expo Push API para todos os usuários com `role: BF_REMINDER` e `pushToken` definido.
 
-Você precisará criar:
+## 🚀 Como executar
 
-1. **Projeto Firebase** em https://console.firebase.google.com
-2. **Arquivo `google-services.json`** (Android) - baixe do console Firebase
-3. **Arquivo `app-anticoncepcional-firebase-adminsdk-fbsvc-*.json`** (Service Account) - para Cloud Functions
-4. **Arquivo `.firebaserc`** com seu project ID
+### 1. Configuração de ambiente
 
-### 2. Instalar dependências
+As variáveis do Firebase ficam no EAS. Baixe-as com:
+
+```bash
+npx eas env:pull --environment production   # gera .env.local
+```
+
+Para build Android, você também precisa do `google-services.json` (secret do EAS / Firebase Console) na raiz do projeto.
+
+### 2. Instalar e rodar o app
 
 ```bash
 npm install
+npm start          # expo start --port 3001
+npm run ios        # GF — Expo Go
+npm run android    # BF — requer dev client / EAS Build
 ```
 
-### 3. Iniciar o app
+### 3. Build do APK (BF)
 
 ```bash
-npx expo start
+npx eas build --platform android
 ```
 
-### 3. Testar Firebase
+### 4. OTA update
 
-- Abra o app
-- Clique em "🧪 Abrir Teste Firebase"
-- Teste autenticação, Firestore e notificações
+```bash
+npm run release-expo   # eas update
+```
 
-### 4. Testar Cloud Functions
+## ☁️ Deploy das Cloud Functions
 
-- Acesse: https://us-central1-app-anticoncepcional.cloudfunctions.net/testPillReminder
-- Verifique se a notificação chega no dispositivo BF
+```bash
+cd functions
+npm install
+npm run build      # tsc -> lib/
+npm run serve      # build + emuladores locais
+npm run deploy     # firebase deploy --only functions
+npm run logs       # firebase functions:log
+```
 
 ## 🔧 Desenvolvimento
 
-### Estrutura do Projeto:
+Aliases de import: `@/*` aponta para a raiz (ex.: `@/src/...`, `@/components/...`, `@/constants/...`).
 
 ```
+app/                      # Rotas (Expo Router, file-based)
+├── index.tsx             # Gatekeeper: auth + redireciona por role
+├── role-select.tsx
+├── main-gf.tsx / main-bf.tsx
+├── calendar-history.tsx / analytics.tsx
+components/                # Componentes de UI reutilizáveis
+constants/                 # theme, observations, pillTypes
 src/
-├── config/firebase.ts          # Configuração Firebase
-├── services/
-│   ├── authService.ts          # Autenticação anônima
-│   ├── firestoreService.ts     # Operações Firestore
-│   └── notificationService.ts  # Notificações locais/push
-├── screens/
-│   └── TestFirebaseScreen.tsx  # Tela de testes
-└── types/index.ts              # Tipos TypeScript
+├── config/firebase.ts     # Init do Firebase + caminhos das coleções
+├── contexts/ThemeContext.tsx
+├── hooks/                 # useAnalytics, useCalendarHistory
+├── services/              # FirestoreService, AuthService, NotificationService, StorageService
+├── types/index.ts         # Tipos + enum ScreenName
+└── utils/dateUtils.ts
 
-functions/
-└── src/index.ts                # Cloud Functions
+functions/src/index.ts     # Cloud Functions (codebase separado)
 ```
 
-### Comandos Úteis:
+Convenções e regras de produto/arquitetura detalhadas estão em `.cursor/rules/*.mdc` e em `CLAUDE.md`.
 
-```bash
-# Desenvolvimento
-npx expo start
+## 📋 Status
 
-# Build para Android
-npx eas build --platform android
-
-# Deploy Cloud Functions
-firebase deploy --only functions
-
-# Ver logs das Functions
-firebase functions:log
-```
-
-## 📋 Status da Implementação
-
-- ✅ **Firebase configurado** (Auth + Firestore)
-- ✅ **Cloud Functions deployadas** (agendada + teste)
-- ✅ **Notificações locais** (iOS - Expo Go)
-- ✅ **Push notifications** (Android - EAS Build)
-- ✅ **Tela de teste** integrada
-- 🔄 **Telas principais** (RoleSelect, MainGF, MainBF) - Próximo passo
-
-## 🎯 Próximos Passos
-
-1. Implementar telas principais do app
-2. Integrar fluxo completo de usuário
-3. Testes finais em produção
-4. Deploy para stores (opcional)
+- ✅ Telas principais (seleção de papel, GF, BF, histórico, analytics)
+- ✅ Firebase (Auth anônima + Firestore)
+- ✅ Cloud Functions (trigger, agendada e HTTP de teste)
+- ✅ Notificações locais (GF) e push (BF)
+- ✅ Tema claro/escuro/automático
+- ✅ Observações diárias e tipos de pílula (ativo/placebo)
 
 ---
 
