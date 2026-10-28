@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Lembrete Anticoncepcional",
     slug: "lembrete-anticoncepcional",
-    version: "1.0.0",
+    version: "2.0.0",
     orientation: "portrait",
     icon: "./assets/logo/logo.png",
     scheme: "lembreteanticoncepcional",
